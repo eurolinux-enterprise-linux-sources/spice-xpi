@@ -1,0 +1,19 @@
+diff --git a/SpiceXPI/src/plugin/plugin.cpp b/SpiceXPI/src/plugin/plugin.cpp
+index 578f453..bc802bb 100644
+--- a/SpiceXPI/src/plugin/plugin.cpp
++++ b/SpiceXPI/src/plugin/plugin.cpp
+@@ -406,7 +406,13 @@ char *nsPluginInstance::GetTitle() const
+ void nsPluginInstance::SetTitle(const char *aTitle)
+ {
+     m_title = aTitle;
+-    LOG_DEBUG(m_title);
++    // duplicate "%", so log4cpp can properly interpret
++    // it as percent symbol
++    std::string title(m_title);
++    size_t found = -2;
++    while ((found = title.find("%", found + 2)) != std::string::npos)
++        title.replace(found, 1, "%%");
++    LOG_DEBUG(title);
+ }
+ 
+ /* attribute string dynamicMenu; */

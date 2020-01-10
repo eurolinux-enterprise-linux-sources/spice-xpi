@@ -1,0 +1,17 @@
+diff --git a/SpiceXPI/src/plugin/plugin.cpp b/SpiceXPI/src/plugin/plugin.cpp
+index bc802bb..a45c3f2 100644
+--- a/SpiceXPI/src/plugin/plugin.cpp
++++ b/SpiceXPI/src/plugin/plugin.cpp
+@@ -745,8 +745,10 @@ void nsPluginInstance::Show()
+ void nsPluginInstance::Disconnect()
+ {
+     LOG_INFO("Disconnecting");
+-    kill(m_pid_controller, SIGTERM);
+-    kill(m_pid_usbrdrctrl, SIGTERM);
++    if (m_pid_controller > 0)
++        kill(m_pid_controller, SIGTERM);
++    if (m_pid_usbrdrctrl > 0)
++        kill(m_pid_usbrdrctrl, SIGTERM);
+ }
+ 
+ void nsPluginInstance::ConnectedStatus(PRInt32 *retval)

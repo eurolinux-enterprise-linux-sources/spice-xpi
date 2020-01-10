@@ -1,0 +1,223 @@
+From 0ef65e17851a8a9539d37abee8a23f5b3ea29b1b Mon Sep 17 00:00:00 2001
+From: Yonit Halperin <yhalperi@redhat.com>
+Date: Mon, 2 Apr 2012 10:31:06 +0300
+Subject: [spice-xpi 13/14] add support for DisableEffects and ColorDepth
+
+- ColorDepth should be 32 or 16
+- DisableEffects is a comma separated string, composed of one or more of
+  the following options: "wallpaper"/"font-smooth"/"animation", or "all"
+
+rhbz #747313
+
+Signed-off-by: Yonit Halperin <yhalperi@redhat.com>
+---
+ SpiceXPI/src/plugin/controller_prot.h    |    3 +++
+ SpiceXPI/src/plugin/nsISpicec.idl        |    2 ++
+ SpiceXPI/src/plugin/nsScriptablePeer.cpp |   16 +++++++++++++++-
+ SpiceXPI/src/plugin/nsScriptablePeer.h   |    2 ++
+ SpiceXPI/src/plugin/plugin.cpp           |   26 ++++++++++++++++++++++++++
+ SpiceXPI/src/plugin/plugin.h             |   10 ++++++++++
+ data/test.html                           |    5 +++++
+ 7 files changed, 63 insertions(+), 1 deletion(-)
+
+diff --git a/SpiceXPI/src/plugin/controller_prot.h b/SpiceXPI/src/plugin/controller_prot.h
+index f2188e4..af61b91 100644
+--- a/SpiceXPI/src/plugin/controller_prot.h
++++ b/SpiceXPI/src/plugin/controller_prot.h
+@@ -100,6 +100,9 @@ enum {
+ 
+     CONTROLLER_ENABLE_SMARTCARD,
+ 
++    CONTROLLER_COLOR_DEPTH,
++    CONTROLLER_DISABLE_EFFECTS,
++
+     //spice client -> extrenal app
+     CONTROLLER_MENU_ITEM_CLICK = 1001,
+ };
+diff --git a/SpiceXPI/src/plugin/nsISpicec.idl b/SpiceXPI/src/plugin/nsISpicec.idl
+index 5fc4a29..d3d0699 100644
+--- a/SpiceXPI/src/plugin/nsISpicec.idl
++++ b/SpiceXPI/src/plugin/nsISpicec.idl
+@@ -61,6 +61,8 @@ interface nsISpicec : nsISupports {
+     attribute unsigned short UsbListenPort;
+     attribute boolean UsbAutoShare;
+     attribute boolean Smartcard;
++    attribute string ColorDepth;
++    attribute string DisableEffects;
+ 
+     void connect();
+     void show();
+diff --git a/SpiceXPI/src/plugin/nsScriptablePeer.cpp b/SpiceXPI/src/plugin/nsScriptablePeer.cpp
+index 394ced8..caab9b7 100644
+--- a/SpiceXPI/src/plugin/nsScriptablePeer.cpp
++++ b/SpiceXPI/src/plugin/nsScriptablePeer.cpp
+@@ -79,6 +79,8 @@ NPIdentifier ScriptablePluginObject::m_id_no_taskmgr_execution;
+ NPIdentifier ScriptablePluginObject::m_id_send_ctrlaltdel;
+ NPIdentifier ScriptablePluginObject::m_id_usb_listen_port;
+ NPIdentifier ScriptablePluginObject::m_id_usb_auto_share;
++NPIdentifier ScriptablePluginObject::m_id_color_depth;
++NPIdentifier ScriptablePluginObject::m_id_disable_effects;
+ NPIdentifier ScriptablePluginObject::m_id_connect;
+ NPIdentifier ScriptablePluginObject::m_id_show;
+ NPIdentifier ScriptablePluginObject::m_id_disconnect;
+@@ -129,6 +131,8 @@ void ScriptablePluginObject::Init()
+     m_id_send_ctrlaltdel = NPN_GetStringIdentifier("SendCtrlAltDelete");
+     m_id_usb_listen_port = NPN_GetStringIdentifier("UsbListenPort");
+     m_id_usb_auto_share = NPN_GetStringIdentifier("UsbAutoShare");
++    m_id_color_depth = NPN_GetStringIdentifier("ColorDepth");
++    m_id_disable_effects = NPN_GetStringIdentifier("DisableEffects");
+     m_id_connect = NPN_GetStringIdentifier("connect");
+     m_id_show = NPN_GetStringIdentifier("show");
+     m_id_disconnect = NPN_GetStringIdentifier("disconnect");
+@@ -170,7 +174,9 @@ bool ScriptablePluginObject::HasProperty(NPIdentifier name)
+            name == m_id_no_taskmgr_execution ||
+            name == m_id_send_ctrlaltdel ||
+            name == m_id_usb_listen_port ||
+-           name == m_id_usb_auto_share);
++           name == m_id_usb_auto_share ||
++           name == m_id_color_depth ||
++           name == m_id_disable_effects);
+ }
+ 
+ bool ScriptablePluginObject::GetProperty(NPIdentifier name, NPVariant *result)
+@@ -220,6 +226,10 @@ bool ScriptablePluginObject::GetProperty(NPIdentifier name, NPVariant *result)
+         INT32_TO_NPVARIANT(m_plugin->GetUsbListenPort(), *result);
+     else if (name == m_id_usb_auto_share)
+         BOOLEAN_TO_NPVARIANT(m_plugin->GetUsbAutoShare(), *result);
++    else if (name == m_id_color_depth)
++        STRINGZ_TO_NPVARIANT(m_plugin->GetColorDepth(), *result);
++    else if (name == m_id_disable_effects)
++        STRINGZ_TO_NPVARIANT(m_plugin->GetDisableEffects(), *result);
+     else
+         return false;
+ 
+@@ -296,6 +306,10 @@ bool ScriptablePluginObject::SetProperty(NPIdentifier name, const NPVariant *val
+         m_plugin->SetUsbListenPort(val);
+     else if (name == m_id_usb_auto_share)
+         m_plugin->SetUsbAutoShare(boolean);
++    else if (name == m_id_color_depth)
++        m_plugin->SetColorDepth(str.c_str());
++    else if (name == m_id_disable_effects)
++        m_plugin->SetDisableEffects(str.c_str());
+     else
+         return false;
+ 
+diff --git a/SpiceXPI/src/plugin/nsScriptablePeer.h b/SpiceXPI/src/plugin/nsScriptablePeer.h
+index 469a05e..44bd53c 100644
+--- a/SpiceXPI/src/plugin/nsScriptablePeer.h
++++ b/SpiceXPI/src/plugin/nsScriptablePeer.h
+@@ -96,6 +96,8 @@ private:
+     static NPIdentifier m_id_send_ctrlaltdel;
+     static NPIdentifier m_id_usb_listen_port;
+     static NPIdentifier m_id_usb_auto_share;
++    static NPIdentifier m_id_color_depth;
++    static NPIdentifier m_id_disable_effects;
+     static NPIdentifier m_id_connect;
+     static NPIdentifier m_id_show;
+     static NPIdentifier m_id_disconnect;
+diff --git a/SpiceXPI/src/plugin/plugin.cpp b/SpiceXPI/src/plugin/plugin.cpp
+index 7be9aa7..9d2eb70 100644
+--- a/SpiceXPI/src/plugin/plugin.cpp
++++ b/SpiceXPI/src/plugin/plugin.cpp
+@@ -253,6 +253,8 @@ NPBool nsPluginInstance::init(NPWindow *aWindow)
+     m_language.clear();
+     m_trust_store_file.clear();
+     m_foreign_file.clear();
++    m_color_depth.clear();
++    m_disable_effects.clear();
+ 
+     m_fullscreen = PR_FALSE;
+     m_smartcard = PR_FALSE;
+@@ -544,6 +546,28 @@ void nsPluginInstance::SetUsbAutoShare(PRBool aUsbAutoShare)
+     LOG_DEBUG(m_usb_auto_share);
+ }
+ 
++/* attribute string ColorDepth; */
++char *nsPluginInstance::GetColorDepth() const
++{
++    return stringCopy(m_color_depth);
++}
++
++void nsPluginInstance::SetColorDepth(const char *aColorDepth)
++{
++    m_color_depth = aColorDepth;
++}
++
++/* attribute string DisableEffects; */
++char *nsPluginInstance::GetDisableEffects() const
++{
++    return stringCopy(m_disable_effects);
++}
++
++void nsPluginInstance::SetDisableEffects(const char *aDisableEffects)
++{
++    m_disable_effects = aDisableEffects;
++}
++
+ void nsPluginInstance::WriteToPipe(const void *data, uint32_t size)
+ {
+     m_external_controller.Write(data, size);
+@@ -736,6 +760,8 @@ void nsPluginInstance::Connect()
+         SendStr(CONTROLLER_CA_FILE, m_trust_store_file.c_str());
+         SendStr(CONTROLLER_HOST_SUBJECT, m_host_subject.c_str());
+         SendStr(CONTROLLER_HOTKEYS, m_hot_keys.c_str());
++        SendValue(CONTROLLER_COLOR_DEPTH, atoi(m_color_depth.c_str()));
++        SendStr(CONTROLLER_DISABLE_EFFECTS, m_disable_effects.c_str());
+         SendMsg(CONTROLLER_CONNECT);
+         SendMsg(CONTROLLER_SHOW);
+ 
+diff --git a/SpiceXPI/src/plugin/plugin.h b/SpiceXPI/src/plugin/plugin.h
+index f8ad6c2..20b60c6 100644
+--- a/SpiceXPI/src/plugin/plugin.h
++++ b/SpiceXPI/src/plugin/plugin.h
+@@ -154,7 +154,15 @@ public:
+     /* attribute boolean UsbAutoShare; */
+     PRBool GetUsbAutoShare() const;
+     void SetUsbAutoShare(PRBool aUsbAutoShare);
++
++    /* attribute ing color depth; */
++    char *GetColorDepth() const;
++    void SetColorDepth(const char *aColorDepth);
+     
++    /* attribute ing disable effects; */
++    char *GetDisableEffects() const;
++    void SetDisableEffects(const char *aDisableEffects);
++
+     NPObject *GetScriptablePeer();
+     
+ private:
+@@ -202,6 +210,8 @@ private:
+     std::string m_usb_filter;
+     PRBool m_usb_auto_share;
+     std::map<std::string, std::string> m_language;
++    std::string m_color_depth;
++    std::string m_disable_effects;
+     
+     NPObject *m_scriptable_peer;
+     std::string m_home_dir;
+diff --git a/data/test.html b/data/test.html
+index 929d096..c00d619 100644
+--- a/data/test.html
++++ b/data/test.html
+@@ -36,6 +36,8 @@ function Execute()
+     embed.Password = document.all["Password"].value;
+     embed.HostSubject = document.all["HostSubject"].value;
+     embed.TrustStore = document.all["TrustStore"].value;
++    embed.ColorDepth = document.all["ColorDepth"].value;
++    embed.DisableEffects = document.all["DisableEffects"].value;
+     embed.fullScreen = false;
+     embed.AdminConsole = (document.all["AdminConsole"].value == "1");
+     embed.HotKeys = document.all["HotKeys"].value;
+@@ -70,6 +72,9 @@ SendCtrlAltDelete: <input id="SendCtrlAltDelete" type="text" size="5" value="1">
+ <BR>
+ HostSubject: <input id="HostSubject" type="text" size="60"> </input></br>
+ TrustStore: <textarea id="TrustStore" type="text" cols="65" rows="15"> </textarea> <BR>
++<BR>
++ColorDepth: <input id="ColorDepth" type="text" size="13"></input></br>
++DisableEffects: <input id="DisableEffects" type="text" size="30"></input></br>
+ 
+ <input type=button value="Exec" onclick='Execute()'/>
+ <input type=button value="Check Status" onclick='Status()'> </input>
+-- 
+1.7.9.3
+

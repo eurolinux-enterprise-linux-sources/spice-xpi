@@ -1,0 +1,392 @@
+diff --git a/SpiceXPI/src/plugin/plugin.cpp b/SpiceXPI/src/plugin/plugin.cpp
+index aed4dfc..279a0c1 100644
+--- a/SpiceXPI/src/plugin/plugin.cpp
++++ b/SpiceXPI/src/plugin/plugin.cpp
+@@ -270,210 +270,248 @@ NPBool nsPluginInstance::isInitialized()
+ /* attribute string hostIP; */
+ char *nsPluginInstance::GetHostIP() const
+ {
++    LOG_DEBUG(m_host_ip);
+     return stringCopy(m_host_ip);
+ }
+ 
+ void nsPluginInstance::SetHostIP(const char *aHostIP)
+ {
+     m_host_ip = aHostIP;
++    LOG_DEBUG(m_host_ip);
+ }
+ 
+ /* attribute string port; */
+ char *nsPluginInstance::GetPort() const
+ {
++    LOG_DEBUG(m_port);
+     return stringCopy(m_port);
+ }
+ 
+ void nsPluginInstance::SetPort(const char *aPort)
+ {
+     m_port = aPort;
++    LOG_DEBUG(m_port);
+ }
+ 
+ /* attribute string SecurePort; */
+ char *nsPluginInstance::GetSecurePort() const
+ {
++    LOG_DEBUG(m_secure_port)
+     return stringCopy(m_secure_port);
+ }
+ 
+ void nsPluginInstance::SetSecurePort(const char *aSecurePort)
+ {
+     m_secure_port = aSecurePort;
++    LOG_DEBUG(m_secure_port);
+ }
+ 
+ /* attribute string Password; */
+ char *nsPluginInstance::GetPassword() const
+ {
++    LOG_DEBUG("Password requested");
+     return stringCopy(m_password);
+ }
+ 
+ void nsPluginInstance::SetPassword(const char *aPassword)
+ {
+     m_password = aPassword;
++    LOG_DEBUG("Password set");
+ }
+ 
+ /* attribute string CipherSuite; */
+ char *nsPluginInstance::GetCipherSuite() const
+ {
++    LOG_DEBUG(m_cipher_suite);
+     return stringCopy(m_cipher_suite);
+ }
+ 
+ void nsPluginInstance::SetCipherSuite(const char *aCipherSuite)
+ {
+     m_cipher_suite = aCipherSuite;
++    LOG_DEBUG(m_cipher_suite);
+ }
+ 
+ /* attribute string SSLChannels; */
+ char *nsPluginInstance::GetSSLChannels() const
+ {
++    LOG_DEBUG(m_ssl_channels);
+     return stringCopy(m_ssl_channels);
+ }
+ 
+ void nsPluginInstance::SetSSLChannels(const char *aSSLChannels)
+ {
+     m_ssl_channels = aSSLChannels;
++    LOG_DEBUG(m_ssl_channels);
+ }
+ 
+ //* attribute string TrustStore; */
+ char *nsPluginInstance::GetTrustStore() const
+ {
++    LOG_DEBUG(m_trust_store);
+     return stringCopy(m_trust_store);
+ }
+ 
+ void nsPluginInstance::SetTrustStore(const char *aTrustStore)
+ {
+     m_trust_store = aTrustStore;
++    LOG_DEBUG(m_trust_store);
+ }
+ 
+ /* attribute string HostSubject; */
+ char *nsPluginInstance::GetHostSubject() const
+ {
++    LOG_DEBUG(m_host_subject);
+     return stringCopy(m_host_subject);
+ }
+ 
+ void nsPluginInstance::SetHostSubject(const char *aHostSubject)
+ {
+     m_host_subject = aHostSubject;
++    LOG_DEBUG(m_host_subject);
+ }
+ 
+ /* attribute boolean fullScreen; */
+ PRBool nsPluginInstance::GetFullScreen() const
+ {
++    LOG_DEBUG(m_fullscreen);
+     return m_fullscreen;
+ }
+ 
+ void nsPluginInstance::SetFullScreen(PRBool aFullScreen)
+ {
+     m_fullscreen = aFullScreen;
++    LOG_DEBUG(m_fullscreen);
+ }
+ 
+ /* attribute string Title; */
+ char *nsPluginInstance::GetTitle() const
+ {
++    LOG_DEBUG(m_title);
+     return stringCopy(m_title);
+ }
+ 
+ void nsPluginInstance::SetTitle(const char *aTitle)
+ {
+     m_title = aTitle;
++    LOG_DEBUG(m_title);
+ }
+ 
+ /* attribute string dynamicMenu; */
+ char *nsPluginInstance::GetDynamicMenu() const
+ {
++    LOG_DEBUG(m_dynamic_menu);
+     return stringCopy(m_dynamic_menu);
+ }
+ 
+ void nsPluginInstance::SetDynamicMenu(const char *aDynamicMenu)
+ {
+     m_dynamic_menu = aDynamicMenu;
++    LOG_DEBUG(m_dynamic_menu);
+ }
+ 
+ /* attribute string NumberOfMonitors; */
+ char *nsPluginInstance::GetNumberOfMonitors() const
+ {
++    LOG_DEBUG(m_number_of_monitors);
+     return stringCopy(m_number_of_monitors);
+ }
+ 
+ void nsPluginInstance::SetNumberOfMonitors(const char *aNumberOfMonitors)
+ {
+     m_number_of_monitors = aNumberOfMonitors;
++    LOG_DEBUG(m_number_of_monitors);
+ }
+ 
+ /* attribute boolean AdminConsole; */
+ PRBool nsPluginInstance::GetAdminConsole() const
+ {
++    LOG_DEBUG(m_admin_console);
+     return m_admin_console;
+ }
+ 
+ void nsPluginInstance::SetAdminConsole(PRBool aAdminConsole)
+ {
+     m_admin_console = aAdminConsole;
++    LOG_DEBUG(m_admin_console);
+ }
+ 
+ /* attribute string GuestHostName; */
+ char *nsPluginInstance::GetGuestHostName() const
+ {
++    LOG_DEBUG(m_guest_host_name);
+     return stringCopy(m_guest_host_name);
+ }
+ 
+ void nsPluginInstance::SetGuestHostName(const char *aGuestHostName)
+ {
+     m_guest_host_name = aGuestHostName;
++    LOG_DEBUG(m_guest_host_name);
+ }
+ 
+ /* attribute string HotKey; */
+ char *nsPluginInstance::GetHotKeys() const
+ {
++    LOG_DEBUG(m_hot_keys);
+     return stringCopy(m_hot_keys);
+ }
+ 
+ void nsPluginInstance::SetHotKeys(const char *aHotKeys)
+ {
+     m_hot_keys = aHotKeys;
++    LOG_DEBUG(m_hot_keys);
+ }
+ 
+ /* attribute boolean NoTaskMgrExecution; */
+ PRBool nsPluginInstance::GetNoTaskMgrExecution() const
+ {
++    LOG_DEBUG(m_no_taskmgr_execution);
+     return m_no_taskmgr_execution;
+ }
+ 
+ void nsPluginInstance::SetNoTaskMgrExecution(PRBool aNoTaskMgrExecution)
+ {
+     m_no_taskmgr_execution = aNoTaskMgrExecution;
++    LOG_DEBUG(m_no_taskmgr_execution);
+ }
+ 
+ /* attribute boolean SendCtrlAltdelete; */
+ PRBool nsPluginInstance::GetSendCtrlAltdelete() const
+ {
++    LOG_DEBUG(m_send_ctrlaltdel);
+     return m_send_ctrlaltdel;
+ }
+ 
+ void nsPluginInstance::SetSendCtrlAltdelete(PRBool aSendCtrlAltdelete)
+ {
+     m_send_ctrlaltdel = aSendCtrlAltdelete;
++    LOG_DEBUG(m_send_ctrlaltdel);
+ }
+ 
+ /* attribute unsigned short UsbListenPort; */
+ unsigned short nsPluginInstance::GetUsbListenPort() const
+ {
++    LOG_DEBUG(m_usb_port);
+     return m_usb_port;
+ }
+ 
+ void nsPluginInstance::SetUsbListenPort(unsigned short aUsbPort)
+ {
+     m_usb_port = aUsbPort;
++    LOG_DEBUG(m_usb_port);
+ }
+ 
+ /* attribute boolean UsbAutoShare; */
+ PRBool nsPluginInstance::GetUsbAutoShare() const
+ {
++    LOG_DEBUG(m_usb_auto_share);
+     return m_usb_auto_share;
+ }
+ 
+ void nsPluginInstance::SetUsbAutoShare(PRBool aUsbAutoShare)
+ {
+     m_usb_auto_share = aUsbAutoShare;
++    LOG_DEBUG(m_usb_auto_share);
+ }
+ 
+ void nsPluginInstance::WriteToPipe(const void *data, uint32_t size)
+@@ -542,15 +580,37 @@ void nsPluginInstance::Connect()
+         return;
+     }
+ 
++    LOG_INFO("SPICE_XPI_SOCKET: " << socket_file);
++
+     m_pid_controller = fork();
+     if (m_pid_controller == 0)
+     {
+-        execl("/usr/libexec/spice-xpi-client", "/usr/libexec/spice-xpi-client", NULL);
+-        LOG_ERROR("ERROR failed to run spice-xpi-client");
++        char *spice_xpi_client_args[] = {
++            const_cast<char*>("/usr/libexec/spice-xpi-client"),
++            NULL
++        };
++        std::stringstream ss;
++        int cnt = sizeof(spice_xpi_client_args) / sizeof(spice_xpi_client_args[0]);
++        for (int i = 0; i < cnt; ++i)
++            ss << spice_xpi_client_args[i] << " ";
++        LOG_INFO("Launching " << ss.str());
++        execv(spice_xpi_client_args[0], spice_xpi_client_args);
++        LOG_ERROR("Failed to launch spice-xpi-client");
+ 
+         // TODO: temporary fallback for backward compatibility
+-        execl("/usr/bin/spicec", "/usr/bin/spicec", "--controller", NULL);
+-        LOG_ERROR("ERROR failed to run spicec fallback");
++        char *spicec_args[] = {
++            const_cast<char*>("/usr/bin/spicec"),
++            const_cast<char*>("--controller"),
++            NULL
++        };
++        ss.str(std::string());
++        ss.clear();
++        cnt = sizeof(spicec_args) / sizeof(spicec_args[0]);
++        for (int i = 0; i < cnt; ++i)
++            ss << spicec_args[i] << " ";
++        LOG_INFO("Launching " << ss.str());
++        execv(spicec_args[0], spicec_args);
++        LOG_ERROR("Failed to launch spicec fallback");
+ 
+         exit(1);
+     }
+@@ -597,6 +657,7 @@ void nsPluginInstance::Connect()
+             return;
+         }
+ 
++        LOG_INFO("Initiating connection with controller");
+         SendInit();
+         SendStr(CONTROLLER_HOST, m_host_ip.c_str());
+         SendValue(CONTROLLER_PORT, atoi(m_port.c_str()));
+@@ -647,6 +708,7 @@ void nsPluginInstance::Show()
+ 
+ void nsPluginInstance::Disconnect()
+ {
++    LOG_INFO("Disconnecting");
+     kill(m_pid_controller, SIGTERM);
+     kill(m_pid_usbrdrctrl, SIGTERM);
+ }
+@@ -661,15 +723,20 @@ void nsPluginInstance::SetLanguageStrings(const char *aSection, const char *aLan
+     if (aSection != NULL && aLanguage != NULL)
+     {
+         if (strlen(aSection) > 0 && strlen(aLanguage) > 0)
++        {
+             m_language[aSection] = aLanguage;
+-
++            LOG_DEBUG(m_language[aSection]);
++        }
+     }
+ }
+ 
+ void nsPluginInstance::SetUsbFilter(const char *aUsbFilter)
+ {
+     if (aUsbFilter != NULL)
++    {
+         m_usb_filter = aUsbFilter;
++        LOG_DEBUG(m_usb_filter);
++    }
+ }
+ 
+ void nsPluginInstance::ExecuteUsbRdrCtrl()
+@@ -691,34 +758,43 @@ void nsPluginInstance::ExecuteUsbRdrCtrl()
+             dup2(logfd, 1);
+         
+         std::string conn_name;
++        ss.str(std::string());
+         ss.clear();
+         ss << "/tmp/SpiceForeignMenu-" << m_pid_controller << ".uds";
+         ss >> conn_name;
+         LOG_DEBUG("Connection name: " << conn_name);
+ 
+         std::string port;
++        ss.str(std::string());
+         ss.clear();
+         ss << m_usb_port;
+         ss >> port;
+ 
+         sleep(2);
+         
+-        execl("/usr/bin/usbrdrctrl",
+-            "/usr/bin/usbrdrctrl",
+-            m_guest_host_name.c_str(),
+-            port.c_str(),
+-            "-c",
+-            conn_name.c_str(),
+-            !m_language["USB"].empty() ? "-l" : "",
+-            !m_language["USB"].empty() ? m_language["USB"].c_str() : "",
+-            !m_usb_filter.empty() ? "-f" : "",
+-            !m_usb_filter.empty() ? m_usb_filter.c_str() : "",
+-            (m_usb_auto_share == PR_TRUE) ? "-a" : "",
+-            NULL);
+-
+-        LOG_ERROR("Failed to execute usbrdrctrl: " << errno << ": " << strerror(errno));
++        char *usbrdrctrl_args[] = {
++            const_cast<char*>("/usr/bin/usbrdrctrl"),
++            const_cast<char*>(m_guest_host_name.c_str()),
++            const_cast<char*>(port.c_str()),
++            const_cast<char*>("-c"),
++            const_cast<char*>(conn_name.c_str()),
++            const_cast<char*>(!m_language["USB"].empty() ? "-l" : ""),
++            const_cast<char*>(!m_language["USB"].empty() ? m_language["USB"].c_str() : ""),
++            const_cast<char*>(!m_usb_filter.empty() ? "-f" : ""),
++            const_cast<char*>(!m_usb_filter.empty() ? m_usb_filter.c_str() : ""),
++            const_cast<char*>((m_usb_auto_share == PR_TRUE) ? "-a" : ""),
++            NULL
++        };
++
++        ss.str(std::string());
++        ss.clear();
++        const int cnt = sizeof(usbrdrctrl_args) / sizeof(usbrdrctrl_args[0]);
++        for (int i = 0; i < cnt; ++i)
++            ss << usbrdrctrl_args[i] << " ";
++        LOG_INFO("Launching " << ss.str());
++        execv(usbrdrctrl_args[0], usbrdrctrl_args);
++        LOG_ERROR("Failed to launch usbrdrctrl: " << errno << ": " << strerror(errno));
+         exit(0);
+-            
+     }
+     else if (m_pid_usbrdrctrl > 0)
+     {

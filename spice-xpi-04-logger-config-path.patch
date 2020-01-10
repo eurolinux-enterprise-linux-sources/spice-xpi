@@ -1,0 +1,29 @@
+diff --git a/SpiceXPI/Makefile.am b/SpiceXPI/Makefile.am
+index 5cef195..9cfaa51 100644
+--- a/SpiceXPI/Makefile.am
++++ b/SpiceXPI/Makefile.am
+@@ -2,9 +2,8 @@ SUBDIRS=src
+ 
+ XPI=SpiceXPI.xpi
+ 
+-EXTRA_DIST = logger.ini
+-spicedatadir = $(datadir)/spice
+-spicedata_DATA = logger.ini
++spicesysconfdir = $(sysconfdir)/spice
++dist_spicesysconf_DATA = logger.ini
+ 
+ DISTDIR=dist
+ ZIP=zip
+diff --git a/SpiceXPI/src/plugin/plugin.cpp b/SpiceXPI/src/plugin/plugin.cpp
+index f0b6458..a5a216e 100644
+--- a/SpiceXPI/src/plugin/plugin.cpp
++++ b/SpiceXPI/src/plugin/plugin.cpp
+@@ -93,7 +93,7 @@ namespace {
+     const std::string PLUGIN_NAME = "Spice Firefox Plugin " + ver;
+     const std::string MIME_TYPES_DESCRIPTION = "application/x-spice:qsc:" + PLUGIN_NAME;
+     const std::string PLUGIN_DESCRIPTION = PLUGIN_NAME + " Spice Client wrapper for firefox";
+-    const std::string LOGGER_CONFIG = "/usr/share/spice/logger.ini";
++    const std::string LOGGER_CONFIG = "/etc/spice/logger.ini";
+ 
+     // helper function for string copy
+     char *stringCopy(const std::string &src)

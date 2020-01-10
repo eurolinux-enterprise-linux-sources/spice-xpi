@@ -1,0 +1,68 @@
+From 8042031bc7a88ccd680425bd9c69dca337e8a174 Mon Sep 17 00:00:00 2001
+From: Peter Hatina <phatina@redhat.com>
+Date: Mon, 23 Apr 2012 10:52:30 +0200
+Subject: [PATCH] remove leading 's' from all spice channel names
+
+---
+ SpiceXPI/src/plugin/plugin.cpp |   38 +++++++++++++++++++++++---------------
+ 1 files changed, 23 insertions(+), 15 deletions(-)
+
+diff --git a/SpiceXPI/src/plugin/plugin.cpp b/SpiceXPI/src/plugin/plugin.cpp
+index 1426dca..9686ca5 100644
+--- a/SpiceXPI/src/plugin/plugin.cpp
++++ b/SpiceXPI/src/plugin/plugin.cpp
+@@ -357,7 +357,29 @@ char *nsPluginInstance::GetSSLChannels() const
+ void nsPluginInstance::SetSSLChannels(const char *aSSLChannels)
+ {
+     m_ssl_channels = aSSLChannels;
+-    LOG_DEBUG(m_ssl_channels);
++    LOG_DEBUG("original channels: " << m_ssl_channels);
++
++    /*
++     * Backward Compatibility: Begin
++     * Remove leading 's' from m_ssl_channels, e.g. "main" not "smain"
++     * RHEL5 uses 'smain' and 'sinpusts
++     * RHEL6 uses 'main'  and 'inputs'
++     */
++    const char* chan_names[] = {
++        "smain", "sdisplay", "sinputs",
++        "scursor", "splayback", "srecord"
++    };
++    const int nnames = sizeof(chan_names) / sizeof(chan_names[0]);
++
++    for (int i = 0; i < nnames; i++) {
++        const char *name = chan_names[i];
++        size_t found = 0;
++        while ((found = m_ssl_channels.find(name, found)) != std::string::npos)
++            m_ssl_channels.replace(found, strlen(name), name + 1);
++    }
++    /* Backward Compatibility: End */
++
++    LOG_DEBUG("modified channels: " << m_ssl_channels);
+ }
+ 
+ //* attribute string TrustStore; */
+@@ -748,20 +770,6 @@ void nsPluginInstance::Connect()
+         SendStr(CONTROLLER_SET_TITLE, m_title.c_str());
+         SendBool(CONTROLLER_SEND_CAD, m_send_ctrlaltdel);
+ 
+-        /*
+-         * HACK -- remove leading s from m_SSLChannels, e.g. "main" not "smain"
+-         * RHEL5 uses 'smain' and 'sinpusts
+-         * RHEL6 uses 'main'  and 'inputs'
+-         */
+-        std::size_t found = 0;
+-        while ((found = m_ssl_channels.find("smain", found)) != std::string::npos)
+-            m_ssl_channels.replace(found, 5, "main");
+-
+-        found = 0;
+-        while ((found = m_ssl_channels.find("sinputs", found)) != std::string::npos)
+-            m_ssl_channels.replace(found, 7, "inputs");
+-        /* HACK */
+-
+         SendStr(CONTROLLER_SECURE_CHANNELS, m_ssl_channels.c_str());
+         SendStr(CONTROLLER_CA_FILE, m_trust_store_file.c_str());
+         SendStr(CONTROLLER_HOST_SUBJECT, m_host_subject.c_str());
+-- 
+1.7.1
+

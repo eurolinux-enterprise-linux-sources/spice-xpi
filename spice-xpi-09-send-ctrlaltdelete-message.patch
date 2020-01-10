@@ -1,0 +1,210 @@
+diff --git a/SpiceXPI/src/plugin/nsISpicec.h b/SpiceXPI/src/plugin/nsISpicec.h
+index 0954a3a..4c46a03 100644
+--- a/SpiceXPI/src/plugin/nsISpicec.h
++++ b/SpiceXPI/src/plugin/nsISpicec.h
+@@ -83,9 +83,9 @@ class NS_NO_VTABLE NS_SCRIPTABLE nsISpicec : public nsISupports {
+   NS_SCRIPTABLE NS_IMETHOD GetNoTaskMgrExecution(PRBool *aNoTaskMgrExecution) = 0;
+   NS_SCRIPTABLE NS_IMETHOD SetNoTaskMgrExecution(PRBool aNoTaskMgrExecution) = 0;
+ 
+-  /* attribute boolean SendCtrlAltdelete; */
+-  NS_SCRIPTABLE NS_IMETHOD GetSendCtrlAltdelete(PRBool *aSendCtrlAltdelete) = 0;
+-  NS_SCRIPTABLE NS_IMETHOD SetSendCtrlAltdelete(PRBool aSendCtrlAltdelete) = 0;
++  /* attribute boolean SendCtrlAltDelete; */
++  NS_SCRIPTABLE NS_IMETHOD GetSendCtrlAltDelete(PRBool *aSendCtrlAltDelete) = 0;
++  NS_SCRIPTABLE NS_IMETHOD SetSendCtrlAltDelete(PRBool aSendCtrlAltDelete) = 0;
+ 
+   /* attribute unsigned short UsbListenPort; */
+   NS_SCRIPTABLE NS_IMETHOD GetUsbListenPort(PRUint16 *aUsbListenPort) = 0;
+@@ -147,8 +147,8 @@ class NS_NO_VTABLE NS_SCRIPTABLE nsISpicec : public nsISupports {
+   NS_SCRIPTABLE NS_IMETHOD SetHotKey(const char * aHotKey); \
+   NS_SCRIPTABLE NS_IMETHOD GetNoTaskMgrExecution(PRBool *aNoTaskMgrExecution); \
+   NS_SCRIPTABLE NS_IMETHOD SetNoTaskMgrExecution(PRBool aNoTaskMgrExecution); \
+-  NS_SCRIPTABLE NS_IMETHOD GetSendCtrlAltdelete(PRBool *aSendCtrlAltdelete); \
+-  NS_SCRIPTABLE NS_IMETHOD SetSendCtrlAltdelete(PRBool aSendCtrlAltdelete); \
++  NS_SCRIPTABLE NS_IMETHOD GetSendCtrlAltDelete(PRBool *aSendCtrlAltDelete); \
++  NS_SCRIPTABLE NS_IMETHOD SetSendCtrlAltDelete(PRBool aSendCtrlAltDelete); \
+   NS_SCRIPTABLE NS_IMETHOD GetUsbListenPort(PRUint16 *aUsbListenPort); \
+   NS_SCRIPTABLE NS_IMETHOD SetUsbListenPort(PRUint16 aUsbListenPort); \
+   NS_SCRIPTABLE NS_IMETHOD GetUsbAutoShare(PRBool *aUsbAutoShare); \
+@@ -190,8 +190,8 @@ class NS_NO_VTABLE NS_SCRIPTABLE nsISpicec : public nsISupports {
+   NS_SCRIPTABLE NS_IMETHOD SetHotKey(const char * aHotKey) { return _to SetHotKey(aHotKey); } \
+   NS_SCRIPTABLE NS_IMETHOD GetNoTaskMgrExecution(PRBool *aNoTaskMgrExecution) { return _to GetNoTaskMgrExecution(aNoTaskMgrExecution); } \
+   NS_SCRIPTABLE NS_IMETHOD SetNoTaskMgrExecution(PRBool aNoTaskMgrExecution) { return _to SetNoTaskMgrExecution(aNoTaskMgrExecution); } \
+-  NS_SCRIPTABLE NS_IMETHOD GetSendCtrlAltdelete(PRBool *aSendCtrlAltdelete) { return _to GetSendCtrlAltdelete(aSendCtrlAltdelete); } \
+-  NS_SCRIPTABLE NS_IMETHOD SetSendCtrlAltdelete(PRBool aSendCtrlAltdelete) { return _to SetSendCtrlAltdelete(aSendCtrlAltdelete); } \
++  NS_SCRIPTABLE NS_IMETHOD GetSendCtrlAltDelete(PRBool *aSendCtrlAltDelete) { return _to GetSendCtrlAltDelete(aSendCtrlAltDelete); } \
++  NS_SCRIPTABLE NS_IMETHOD SetSendCtrlAltDelete(PRBool aSendCtrlAltDelete) { return _to SetSendCtrlAltDelete(aSendCtrlAltDelete); } \
+   NS_SCRIPTABLE NS_IMETHOD GetUsbListenPort(PRUint16 *aUsbListenPort) { return _to GetUsbListenPort(aUsbListenPort); } \
+   NS_SCRIPTABLE NS_IMETHOD SetUsbListenPort(PRUint16 aUsbListenPort) { return _to SetUsbListenPort(aUsbListenPort); } \
+   NS_SCRIPTABLE NS_IMETHOD GetUsbAutoShare(PRBool *aUsbAutoShare) { return _to GetUsbAutoShare(aUsbAutoShare); } \
+@@ -233,8 +233,8 @@ class NS_NO_VTABLE NS_SCRIPTABLE nsISpicec : public nsISupports {
+   NS_SCRIPTABLE NS_IMETHOD SetHotKey(const char * aHotKey) { return !_to ? NS_ERROR_NULL_POINTER : _to->SetHotKey(aHotKey); } \
+   NS_SCRIPTABLE NS_IMETHOD GetNoTaskMgrExecution(PRBool *aNoTaskMgrExecution) { return !_to ? NS_ERROR_NULL_POINTER : _to->GetNoTaskMgrExecution(aNoTaskMgrExecution); } \
+   NS_SCRIPTABLE NS_IMETHOD SetNoTaskMgrExecution(PRBool aNoTaskMgrExecution) { return !_to ? NS_ERROR_NULL_POINTER : _to->SetNoTaskMgrExecution(aNoTaskMgrExecution); } \
+-  NS_SCRIPTABLE NS_IMETHOD GetSendCtrlAltdelete(PRBool *aSendCtrlAltdelete) { return !_to ? NS_ERROR_NULL_POINTER : _to->GetSendCtrlAltdelete(aSendCtrlAltdelete); } \
+-  NS_SCRIPTABLE NS_IMETHOD SetSendCtrlAltdelete(PRBool aSendCtrlAltdelete) { return !_to ? NS_ERROR_NULL_POINTER : _to->SetSendCtrlAltdelete(aSendCtrlAltdelete); } \
++  NS_SCRIPTABLE NS_IMETHOD GetSendCtrlAltDelete(PRBool *aSendCtrlAltDelete) { return !_to ? NS_ERROR_NULL_POINTER : _to->GetSendCtrlAltDelete(aSendCtrlAltDelete); } \
++  NS_SCRIPTABLE NS_IMETHOD SetSendCtrlAltDelete(PRBool aSendCtrlAltDelete) { return !_to ? NS_ERROR_NULL_POINTER : _to->SetSendCtrlAltDelete(aSendCtrlAltDelete); } \
+   NS_SCRIPTABLE NS_IMETHOD GetUsbListenPort(PRUint16 *aUsbListenPort) { return !_to ? NS_ERROR_NULL_POINTER : _to->GetUsbListenPort(aUsbListenPort); } \
+   NS_SCRIPTABLE NS_IMETHOD SetUsbListenPort(PRUint16 aUsbListenPort) { return !_to ? NS_ERROR_NULL_POINTER : _to->SetUsbListenPort(aUsbListenPort); } \
+   NS_SCRIPTABLE NS_IMETHOD GetUsbAutoShare(PRBool *aUsbAutoShare) { return !_to ? NS_ERROR_NULL_POINTER : _to->GetUsbAutoShare(aUsbAutoShare); } \
+@@ -418,12 +418,12 @@ NS_IMETHODIMP nsSpicec::SetNoTaskMgrExecution(PRBool aNoTaskMgrExecution)
+     return NS_ERROR_NOT_IMPLEMENTED;
+ }
+ 
+-/* attribute boolean SendCtrlAltdelete; */
+-NS_IMETHODIMP nsSpicec::GetSendCtrlAltdelete(PRBool *aSendCtrlAltdelete)
++/* attribute boolean SendCtrlAltDelete; */
++NS_IMETHODIMP nsSpicec::GetSendCtrlAltDelete(PRBool *aSendCtrlAltDelete)
+ {
+     return NS_ERROR_NOT_IMPLEMENTED;
+ }
+-NS_IMETHODIMP nsSpicec::SetSendCtrlAltdelete(PRBool aSendCtrlAltdelete)
++NS_IMETHODIMP nsSpicec::SetSendCtrlAltDelete(PRBool aSendCtrlAltDelete)
+ {
+     return NS_ERROR_NOT_IMPLEMENTED;
+ }
+diff --git a/SpiceXPI/src/plugin/nsISpicec.idl b/SpiceXPI/src/plugin/nsISpicec.idl
+index 5e6fd55..5fc4a29 100644
+--- a/SpiceXPI/src/plugin/nsISpicec.idl
++++ b/SpiceXPI/src/plugin/nsISpicec.idl
+@@ -57,7 +57,7 @@ interface nsISpicec : nsISupports {
+     attribute string GuestHostName;
+     attribute string HotKey;
+     attribute boolean NoTaskMgrExecution;
+-    attribute boolean SendCtrlAltdelete;
++    attribute boolean SendCtrlAltDelete;
+     attribute unsigned short UsbListenPort;
+     attribute boolean UsbAutoShare;
+     attribute boolean Smartcard;
+diff --git a/SpiceXPI/src/plugin/nsScriptablePeer.cpp b/SpiceXPI/src/plugin/nsScriptablePeer.cpp
+index 8ec50e8..394ced8 100644
+--- a/SpiceXPI/src/plugin/nsScriptablePeer.cpp
++++ b/SpiceXPI/src/plugin/nsScriptablePeer.cpp
+@@ -126,7 +126,7 @@ void ScriptablePluginObject::Init()
+     m_id_guest_hostname = NPN_GetStringIdentifier("GuestHostName");
+     m_id_hotkey = NPN_GetStringIdentifier("HotKey");
+     m_id_no_taskmgr_execution = NPN_GetStringIdentifier("NoTaskMgrExecution");
+-    m_id_send_ctrlaltdel = NPN_GetStringIdentifier("SendCtrlAltdelete");
++    m_id_send_ctrlaltdel = NPN_GetStringIdentifier("SendCtrlAltDelete");
+     m_id_usb_listen_port = NPN_GetStringIdentifier("UsbListenPort");
+     m_id_usb_auto_share = NPN_GetStringIdentifier("UsbAutoShare");
+     m_id_connect = NPN_GetStringIdentifier("connect");
+@@ -215,7 +215,7 @@ bool ScriptablePluginObject::GetProperty(NPIdentifier name, NPVariant *result)
+     else if (name == m_id_no_taskmgr_execution)
+         BOOLEAN_TO_NPVARIANT(m_plugin->GetNoTaskMgrExecution(), *result);
+     else if (name == m_id_send_ctrlaltdel)
+-        BOOLEAN_TO_NPVARIANT(m_plugin->GetSendCtrlAltdelete(), *result);
++        BOOLEAN_TO_NPVARIANT(m_plugin->GetSendCtrlAltDelete(), *result);
+     else if (name == m_id_usb_listen_port)
+         INT32_TO_NPVARIANT(m_plugin->GetUsbListenPort(), *result);
+     else if (name == m_id_usb_auto_share)
+@@ -291,7 +291,7 @@ bool ScriptablePluginObject::SetProperty(NPIdentifier name, const NPVariant *val
+     else if (name == m_id_no_taskmgr_execution)
+         m_plugin->SetNoTaskMgrExecution(boolean);
+     else if (name == m_id_send_ctrlaltdel)
+-        m_plugin->SetSendCtrlAltdelete(boolean);
++        m_plugin->SetSendCtrlAltDelete(boolean);
+     else if (name == m_id_usb_listen_port)
+         m_plugin->SetUsbListenPort(val);
+     else if (name == m_id_usb_auto_share)
+diff --git a/SpiceXPI/src/plugin/plugin.cpp b/SpiceXPI/src/plugin/plugin.cpp
+index 612f59b..578f453 100644
+--- a/SpiceXPI/src/plugin/plugin.cpp
++++ b/SpiceXPI/src/plugin/plugin.cpp
+@@ -246,7 +246,7 @@ NPBool nsPluginInstance::init(NPWindow *aWindow)
+     m_smartcard = PR_FALSE;
+     m_admin_console = PR_FALSE;
+     m_no_taskmgr_execution = PR_FALSE;
+-    m_send_ctrlaltdel = PR_FALSE;
++    m_send_ctrlaltdel = PR_TRUE;
+ 
+     return m_initialized;
+ }
+@@ -487,16 +487,16 @@ void nsPluginInstance::SetNoTaskMgrExecution(PRBool aNoTaskMgrExecution)
+     LOG_DEBUG(m_no_taskmgr_execution);
+ }
+ 
+-/* attribute boolean SendCtrlAltdelete; */
+-PRBool nsPluginInstance::GetSendCtrlAltdelete() const
++/* attribute boolean SendCtrlAltDelete; */
++PRBool nsPluginInstance::GetSendCtrlAltDelete() const
+ {
+     LOG_DEBUG(m_send_ctrlaltdel);
+     return m_send_ctrlaltdel;
+ }
+ 
+-void nsPluginInstance::SetSendCtrlAltdelete(PRBool aSendCtrlAltdelete)
++void nsPluginInstance::SetSendCtrlAltDelete(PRBool aSendCtrlAltDelete)
+ {
+-    m_send_ctrlaltdel = aSendCtrlAltdelete;
++    m_send_ctrlaltdel = aSendCtrlAltDelete;
+     LOG_DEBUG(m_send_ctrlaltdel);
+ }
+ 
+@@ -553,6 +553,12 @@ void nsPluginInstance::SendValue(uint32_t id, uint32_t value)
+     WriteToPipe(&msg, sizeof(msg));
+ }
+ 
++void nsPluginInstance::SendBool(uint32_t id, bool value)
++{
++    ControllerValue msg = { {id, sizeof(msg)}, value };
++    WriteToPipe(&msg, sizeof(msg));
++}
++
+ void nsPluginInstance::SendStr(uint32_t id, const char *str)
+ {
+     if (!strlen(str))
+@@ -691,6 +697,7 @@ void nsPluginInstance::Connect()
+         SendStr(CONTROLLER_PASSWORD, m_password.c_str());
+         SendStr(CONTROLLER_TLS_CIPHERS, m_cipher_suite.c_str());
+         SendStr(CONTROLLER_SET_TITLE, m_title.c_str());
++        SendBool(CONTROLLER_SEND_CAD, m_send_ctrlaltdel);
+ 
+         /*
+          * HACK -- remove leading s from m_SSLChannels, e.g. "main" not "smain"
+diff --git a/SpiceXPI/src/plugin/plugin.h b/SpiceXPI/src/plugin/plugin.h
+index 043a0af..e2284c4 100644
+--- a/SpiceXPI/src/plugin/plugin.h
++++ b/SpiceXPI/src/plugin/plugin.h
+@@ -143,9 +143,9 @@ public:
+     PRBool GetNoTaskMgrExecution() const;
+     void SetNoTaskMgrExecution(PRBool aNoTaskMgrExecution);
+     
+-    /* attribute ing SendCtrlAltdelete; */
+-    PRBool GetSendCtrlAltdelete() const;
+-    void SetSendCtrlAltdelete(PRBool aSendCtrlAltdelete);
++    /* attribute ing SendCtrlAltDelete; */
++    PRBool GetSendCtrlAltDelete() const;
++    void SetSendCtrlAltDelete(PRBool aSendCtrlAltDelete);
+     
+     /* attribute unsigned short UsbListenPort; */
+     unsigned short GetUsbListenPort() const;
+@@ -167,6 +167,7 @@ private:
+     void SendValue(uint32_t id, uint32_t value);
+     void SendStr(uint32_t id, const char *str);
+     void SendWStr(uint32_t id, const wchar_t *str);
++    void SendBool(uint32_t id, bool value);
+     void CallOnDisconnected(int code);
+   
+ private:
+diff --git a/data/test.html b/data/test.html
+index ce94acd..929d096 100644
+--- a/data/test.html
++++ b/data/test.html
+@@ -39,6 +39,7 @@ function Execute()
+     embed.fullScreen = false;
+     embed.AdminConsole = (document.all["AdminConsole"].value == "1");
+     embed.HotKeys = document.all["HotKeys"].value;
++    embed.SendCtrlAltDelete = (document.all["SendCtrlAltDelete"].value == "1")
+     embed.fAudio = true;
+     embed.connect();
+ }
+@@ -65,6 +66,7 @@ SecurePort: <input id="SecurePort" type="text" size="13"> </input> <BR>
+ Password: <input id="Password" type="text" size="13"> </input>
+ HotKeys: <input id="HotKeys" type="text" size="13" value="release-cursor=ctrl+alt"> </input>
+ AdminConsole: <input id="AdminConsole" type="text" size="5" value="1"> </input>
++SendCtrlAltDelete: <input id="SendCtrlAltDelete" type="text" size="5" value="1"> </input>
+ <BR>
+ HostSubject: <input id="HostSubject" type="text" size="60"> </input></br>
+ TrustStore: <textarea id="TrustStore" type="text" cols="65" rows="15"> </textarea> <BR>

@@ -1,0 +1,12 @@
+diff --git a/SpiceXPI/src/plugin/plugin.cpp b/SpiceXPI/src/plugin/plugin.cpp
+index a5a216e..f749cdc 100644
+--- a/SpiceXPI/src/plugin/plugin.cpp
++++ b/SpiceXPI/src/plugin/plugin.cpp
+@@ -866,6 +866,7 @@ void *nsPluginInstance::ControllerWaitHelper(void *opaque)
+     waitpid(fake_this->m_pid_controller, &exit_code, 0);
+     LOG_DEBUG("Controller finished, pid: " << fake_this->m_pid_controller 
+         << ", exit code: " << exit_code);
++    fake_this->m_connected_status = fake_this->m_external_controller.TranslateRC(exit_code);
+     fake_this->CallOnDisconnected(exit_code);
+     fake_this->m_external_controller.Disconnect();
+     fake_this->m_pid_controller = -1;

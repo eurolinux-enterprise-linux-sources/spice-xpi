@@ -1,0 +1,161 @@
+From 7871b55c5aee51405ea5e3c2f087a379f60c8dfa Mon Sep 17 00:00:00 2001
+From: Marc-Andre Lureau <marcandre.lureau@redhat.com>
+Date: Fri, 2 Mar 2012 16:14:38 +0100
+Subject: [spice-xpi] Add smartcard option
+
+---
+ SpiceXPI/src/plugin/controller_prot.h    |    2 ++
+ SpiceXPI/src/plugin/nsISpicec.idl        |    1 +
+ SpiceXPI/src/plugin/nsScriptablePeer.cpp |    7 +++++++
+ SpiceXPI/src/plugin/nsScriptablePeer.h   |    1 +
+ SpiceXPI/src/plugin/plugin.cpp           |   13 +++++++++++++
+ SpiceXPI/src/plugin/plugin.h             |    5 +++++
+ 6 files changed, 29 insertions(+)
+
+diff --git a/SpiceXPI/src/plugin/controller_prot.h b/SpiceXPI/src/plugin/controller_prot.h
+index 3d8c7d5..f2188e4 100644
+--- a/SpiceXPI/src/plugin/controller_prot.h
++++ b/SpiceXPI/src/plugin/controller_prot.h
+@@ -98,6 +98,8 @@ enum {
+     CONTROLLER_SHOW,
+     CONTROLLER_HIDE,
+ 
++    CONTROLLER_ENABLE_SMARTCARD,
++
+     //spice client -> extrenal app
+     CONTROLLER_MENU_ITEM_CLICK = 1001,
+ };
+diff --git a/SpiceXPI/src/plugin/nsISpicec.idl b/SpiceXPI/src/plugin/nsISpicec.idl
+index f9f6f4b..5e6fd55 100644
+--- a/SpiceXPI/src/plugin/nsISpicec.idl
++++ b/SpiceXPI/src/plugin/nsISpicec.idl
+@@ -60,6 +60,7 @@ interface nsISpicec : nsISupports {
+     attribute boolean SendCtrlAltdelete;
+     attribute unsigned short UsbListenPort;
+     attribute boolean UsbAutoShare;
++    attribute boolean Smartcard;
+ 
+     void connect();
+     void show();
+diff --git a/SpiceXPI/src/plugin/nsScriptablePeer.cpp b/SpiceXPI/src/plugin/nsScriptablePeer.cpp
+index b9319a7..8ec50e8 100644
+--- a/SpiceXPI/src/plugin/nsScriptablePeer.cpp
++++ b/SpiceXPI/src/plugin/nsScriptablePeer.cpp
+@@ -68,6 +68,7 @@ NPIdentifier ScriptablePluginObject::m_id_ssl_channels;
+ NPIdentifier ScriptablePluginObject::m_id_trust_store;
+ NPIdentifier ScriptablePluginObject::m_id_host_subject;
+ NPIdentifier ScriptablePluginObject::m_id_fullscreen;
++NPIdentifier ScriptablePluginObject::m_id_smartcard;
+ NPIdentifier ScriptablePluginObject::m_id_admin_console;
+ NPIdentifier ScriptablePluginObject::m_id_title;
+ NPIdentifier ScriptablePluginObject::m_id_dynamic_menu;
+@@ -117,6 +118,7 @@ void ScriptablePluginObject::Init()
+     m_id_trust_store = NPN_GetStringIdentifier("TrustStore");
+     m_id_host_subject = NPN_GetStringIdentifier("HostSubject");
+     m_id_fullscreen = NPN_GetStringIdentifier("fullScreen");
++    m_id_smartcard = NPN_GetStringIdentifier("Smartcard");
+     m_id_admin_console = NPN_GetStringIdentifier("AdminConsole");
+     m_id_title = NPN_GetStringIdentifier("Title");
+     m_id_dynamic_menu = NPN_GetStringIdentifier("dynamicMenu");
+@@ -158,6 +160,7 @@ bool ScriptablePluginObject::HasProperty(NPIdentifier name)
+            name == m_id_trust_store ||
+            name == m_id_host_subject ||
+            name == m_id_fullscreen ||
++           name == m_id_smartcard ||
+            name == m_id_admin_console ||
+            name == m_id_title ||
+            name == m_id_dynamic_menu ||
+@@ -195,6 +198,8 @@ bool ScriptablePluginObject::GetProperty(NPIdentifier name, NPVariant *result)
+         STRINGZ_TO_NPVARIANT(m_plugin->GetHostSubject(), *result);
+     else if (name == m_id_fullscreen)
+         BOOLEAN_TO_NPVARIANT(m_plugin->GetFullScreen(), *result);
++    else if (name == m_id_smartcard)
++        BOOLEAN_TO_NPVARIANT(m_plugin->GetSmartcard(), *result);
+     else if (name == m_id_admin_console)
+         BOOLEAN_TO_NPVARIANT(m_plugin->GetAdminConsole(), *result);
+     else if (name == m_id_title)
+@@ -269,6 +274,8 @@ bool ScriptablePluginObject::SetProperty(NPIdentifier name, const NPVariant *val
+         m_plugin->SetHostSubject(str.c_str());
+     else if (name == m_id_fullscreen)
+         m_plugin->SetFullScreen(boolean);
++    else if (name == m_id_smartcard)
++        m_plugin->SetSmartcard(boolean);
+     else if (name == m_id_admin_console)
+         m_plugin->SetAdminConsole(boolean);
+     else if (name == m_id_title)
+diff --git a/SpiceXPI/src/plugin/nsScriptablePeer.h b/SpiceXPI/src/plugin/nsScriptablePeer.h
+index dd97d14..469a05e 100644
+--- a/SpiceXPI/src/plugin/nsScriptablePeer.h
++++ b/SpiceXPI/src/plugin/nsScriptablePeer.h
+@@ -85,6 +85,7 @@ private:
+     static NPIdentifier m_id_trust_store;
+     static NPIdentifier m_id_host_subject;
+     static NPIdentifier m_id_fullscreen;
++    static NPIdentifier m_id_smartcard;
+     static NPIdentifier m_id_admin_console;
+     static NPIdentifier m_id_title;
+     static NPIdentifier m_id_dynamic_menu;
+diff --git a/SpiceXPI/src/plugin/plugin.cpp b/SpiceXPI/src/plugin/plugin.cpp
+index 52556b5..42e4b1b 100644
+--- a/SpiceXPI/src/plugin/plugin.cpp
++++ b/SpiceXPI/src/plugin/plugin.cpp
+@@ -243,6 +243,7 @@ NPBool nsPluginInstance::init(NPWindow *aWindow)
+     m_guest_host_name.clear();
+ 
+     m_fullscreen = PR_FALSE;
++    m_smartcard = PR_FALSE;
+     m_admin_console = PR_FALSE;
+     m_no_taskmgr_execution = PR_FALSE;
+     m_send_ctrlaltdel = PR_FALSE;
+@@ -384,6 +385,17 @@ void nsPluginInstance::SetFullScreen(PRBool aFullScreen)
+     LOG_DEBUG(m_fullscreen);
+ }
+ 
++/* attribute boolean Smartcard; */
++PRBool nsPluginInstance::GetSmartcard() const
++{
++    return m_smartcard;
++}
++
++void nsPluginInstance::SetSmartcard(PRBool aSmartcard)
++{
++    m_smartcard = aSmartcard;
++}
++
+ /* attribute string Title; */
+ char *nsPluginInstance::GetTitle() const
+ {
+@@ -674,6 +686,7 @@ void nsPluginInstance::Connect()
+         SendValue(CONTROLLER_FULL_SCREEN,
+                    (m_fullscreen == PR_TRUE ? CONTROLLER_SET_FULL_SCREEN : 0) |
+                    (m_admin_console == PR_FALSE ? CONTROLLER_AUTO_DISPLAY_RES : 0));
++        SendValue(CONTROLLER_ENABLE_SMARTCARD, m_smartcard == PR_TRUE ? 1 : 0);
+         SendStr(CONTROLLER_PASSWORD, m_password.c_str());
+         SendStr(CONTROLLER_TLS_CIPHERS, m_cipher_suite.c_str());
+         SendStr(CONTROLLER_SET_TITLE, m_title.c_str());
+diff --git a/SpiceXPI/src/plugin/plugin.h b/SpiceXPI/src/plugin/plugin.h
+index ea6f022..043a0af 100644
+--- a/SpiceXPI/src/plugin/plugin.h
++++ b/SpiceXPI/src/plugin/plugin.h
+@@ -110,6 +110,10 @@ public:
+     /* attribute ing FullScreen; */
+     PRBool GetFullScreen() const;
+     void SetFullScreen(PRBool aFullScreen);
++
++    /* attribute ing smartcard; */
++    PRBool GetSmartcard() const;
++    void SetSmartcard(PRBool aSmartcard);
+     
+     /* attribute ing Port; */
+     char *GetTitle() const;
+@@ -185,6 +189,7 @@ private:
+     std::string m_trust_store;
+     std::string m_host_subject;
+     PRBool m_fullscreen;
++    PRBool m_smartcard;
+     PRBool m_admin_console;
+     std::string m_title;
+     std::string m_dynamic_menu;
+-- 
+1.7.9.3
+

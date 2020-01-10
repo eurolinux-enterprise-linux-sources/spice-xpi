@@ -1,0 +1,72 @@
+From 81bd6988f2e72232ee04f37b1a5181f0e980d613 Mon Sep 17 00:00:00 2001
+From: Marc-Andre Lureau <marcandre.lureau@redhat.com>
+Date: Wed, 29 Feb 2012 16:08:37 +0100
+Subject: [PATCH] Export an environment variable with the foreign menu path
+
+---
+ SpiceXPI/src/plugin/plugin.cpp |   20 ++++++++++++--------
+ SpiceXPI/src/plugin/plugin.h   |    1 +
+ 2 files changed, 13 insertions(+), 8 deletions(-)
+
+diff --git a/SpiceXPI/src/plugin/plugin.cpp b/SpiceXPI/src/plugin/plugin.cpp
+index a5a216e..496c35c 100644
+--- a/SpiceXPI/src/plugin/plugin.cpp
++++ b/SpiceXPI/src/plugin/plugin.cpp
+@@ -579,9 +579,18 @@ void nsPluginInstance::Connect()
+         LOG_ERROR ("could not set SPICE_XPI_SOCKET env variable");
+         return;
+     }
+-
+     LOG_INFO("SPICE_XPI_SOCKET: " << socket_file);
+ 
++    std::string foreign_file(m_tmp_dir);
++    foreign_file += "/spice-foreign";
++    if (setenv("SPICE_FOREIGN_MENU_SOCKET", foreign_file.c_str(), 1))
++    {
++        LOG_ERROR ("could not set SPICE_FOREIGN_MENU_SOCKET env variable");
++        return;
++    }
++    LOG_INFO("SPICE_FOREIGN_MENU_SOCKET: " << foreign_file);
++    m_foreign_file = foreign_file;
++
+     m_pid_controller = fork();
+     if (m_pid_controller == 0)
+     {
+@@ -757,12 +766,7 @@ void nsPluginInstance::ExecuteUsbRdrCtrl()
+         if (logfd > 0)
+             dup2(logfd, 1);
+         
+-        std::string conn_name;
+-        ss.str(std::string());
+-        ss.clear();
+-        ss << "/tmp/SpiceForeignMenu-" << m_pid_controller << ".uds";
+-        ss >> conn_name;
+-        LOG_DEBUG("Connection name: " << conn_name);
++        LOG_DEBUG("Connection name: " << m_foreign_file);
+ 
+         std::string port;
+         ss.str(std::string());
+@@ -777,7 +781,7 @@ void nsPluginInstance::ExecuteUsbRdrCtrl()
+             const_cast<char*>(m_guest_host_name.c_str()),
+             const_cast<char*>(port.c_str()),
+             const_cast<char*>("-c"),
+-            const_cast<char*>(conn_name.c_str()),
++            const_cast<char*>(m_foreign_file.c_str()),
+             const_cast<char*>(!m_language["USB"].empty() ? "-l" : ""),
+             const_cast<char*>(!m_language["USB"].empty() ? m_language["USB"].c_str() : ""),
+             const_cast<char*>(!m_usb_filter.empty() ? "-f" : ""),
+diff --git a/SpiceXPI/src/plugin/plugin.h b/SpiceXPI/src/plugin/plugin.h
+index 5f95472..ea6f022 100644
+--- a/SpiceXPI/src/plugin/plugin.h
++++ b/SpiceXPI/src/plugin/plugin.h
+@@ -203,6 +203,7 @@ private:
+     std::string m_home_dir;
+     std::string m_tmp_dir;
+     std::string m_trust_store_file;
++    std::string m_foreign_file;
+ };
+ 
+ #endif // PLUGIN_H
+-- 
+1.7.1
+

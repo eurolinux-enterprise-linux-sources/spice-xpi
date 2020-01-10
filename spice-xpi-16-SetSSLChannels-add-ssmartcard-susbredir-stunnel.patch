@@ -1,0 +1,34 @@
+From 59295182c102eb4e19cba3d4d641eb96f7c4aa75 Mon Sep 17 00:00:00 2001
+From: Alon Levy <alevy@redhat.com>
+Date: Wed, 9 May 2012 11:49:43 +0300
+Subject: [PATCH] SetSSLChannels: add ssmartcard, susbredir, stunnel
+
+Adding some more channels to the RHEL 5 list. The longer winded story is
+that ovirt-engine passes us those values because vdsm unconditionally
+removes the first letter of every channel name in the secure channels
+list (aka SSLChannels here). Instead of changing vdsm, and dealing with
+multiple vdsm versions for each cluster, a huge PITA, let spice-xpi
+parse some extra channel names.
+
+RHBZ: 823578
+---
+ SpiceXPI/src/plugin/plugin.cpp |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/SpiceXPI/src/plugin/plugin.cpp b/SpiceXPI/src/plugin/plugin.cpp
+index 906c985..b7f61ba 100644
+--- a/SpiceXPI/src/plugin/plugin.cpp
++++ b/SpiceXPI/src/plugin/plugin.cpp
+@@ -337,7 +337,8 @@ void nsPluginInstance::SetSSLChannels(const char *aSSLChannels)
+      */
+     const char* chan_names[] = {
+         "smain", "sdisplay", "sinputs",
+-        "scursor", "splayback", "srecord"
++        "scursor", "splayback", "srecord",
++        "susbredir", "ssmartcard", "stunnel"
+     };
+     const int nnames = sizeof(chan_names) / sizeof(chan_names[0]);
+ 
+-- 
+1.7.10.1
+

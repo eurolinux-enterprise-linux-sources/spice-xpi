@@ -1,0 +1,278 @@
+diff --git a/SpiceXPI/src/plugin/plugin.cpp b/SpiceXPI/src/plugin/plugin.cpp
+index 816ac63..aed4dfc 100644
+--- a/SpiceXPI/src/plugin/plugin.cpp
++++ b/SpiceXPI/src/plugin/plugin.cpp
+@@ -180,10 +180,10 @@ void NS_DestroyPluginInstance(nsPluginInstanceBase *aPlugin)
+ // nsPluginInstance class implementation
+ //
+ 
+-std::map<pid_t, nsPluginInstance *> nsPluginInstance::s_children;
+-
+ nsPluginInstance::nsPluginInstance(NPP aInstance):
+     nsPluginInstanceBase(),
++    m_pid_controller(-1),
++    m_pid_usbrdrctrl(-1),
+     m_instance(aInstance),
+     m_initialized(PR_FALSE),
+     m_scriptable_peer(NULL)
+@@ -210,11 +210,6 @@ nsPluginInstance::nsPluginInstance(NPP aInstance):
+     }
+ 
+     m_connected_status = -2;
+-
+-    struct sigaction chld;
+-    chld.sa_sigaction = SigchldRoutine;
+-    chld.sa_flags = SA_NOCLDSTOP | SA_RESTART | SA_SIGINFO;
+-    sigaction(SIGCHLD, &chld, NULL);
+ }
+ 
+ nsPluginInstance::~nsPluginInstance()
+@@ -462,33 +457,23 @@ void nsPluginInstance::SetSendCtrlAltdelete(PRBool aSendCtrlAltdelete)
+ /* attribute unsigned short UsbListenPort; */
+ unsigned short nsPluginInstance::GetUsbListenPort() const
+ {
+-    // this method exists due to RHEVM 2.2
+-    // and should be removed some time in future,
+-    // when fixed in RHEVM
+-    return 0;
++    return m_usb_port;
+ }
+ 
+ void nsPluginInstance::SetUsbListenPort(unsigned short aUsbPort)
+ {
+-    // this method exists due to RHEVM 2.2
+-    // and should be removed some time in future,
+-    // when fixed in RHEVM
++    m_usb_port = aUsbPort;
+ }
+ 
+ /* attribute boolean UsbAutoShare; */
+ PRBool nsPluginInstance::GetUsbAutoShare() const
+ {
+-    // this method exists due to RHEVM 2.2
+-    // and should be removed some time in future,
+-    // when fixed in RHEVM
+-    return false;
++    return m_usb_auto_share;
+ }
+ 
+ void nsPluginInstance::SetUsbAutoShare(PRBool aUsbAutoShare)
+ {
+-    // this method exists due to RHEVM 2.2
+-    // and should be removed some time in future,
+-    // when fixed in RHEVM
++    m_usb_auto_share = aUsbAutoShare;
+ }
+ 
+ void nsPluginInstance::WriteToPipe(const void *data, uint32_t size)
+@@ -557,9 +542,8 @@ void nsPluginInstance::Connect()
+         return;
+     }
+ 
+-    pid_t child = fork();
+-    LOG_DEBUG("child pid: " << child);
+-    if (child == 0)
++    m_pid_controller = fork();
++    if (m_pid_controller == 0)
+     {
+         execl("/usr/libexec/spice-xpi-client", "/usr/libexec/spice-xpi-client", NULL);
+         LOG_ERROR("ERROR failed to run spice-xpi-client");
+@@ -572,6 +556,7 @@ void nsPluginInstance::Connect()
+     }
+     else
+     {
++        LOG_DEBUG("Controller pid: " << m_pid_controller);
+         m_external_controller.SetFilename(socket_file);
+ 
+         if (m_external_controller.Connect(10) != 0)
+@@ -647,7 +632,10 @@ void nsPluginInstance::Connect()
+         // set connected status
+         m_connected_status = -1;
+ 
+-        s_children[child] = this;
++        pthread_t controller_thread_id;
++        pthread_create(&controller_thread_id, NULL, ControllerWaitHelper,
++            reinterpret_cast<void *>(this));
++        ExecuteUsbRdrCtrl();
+     }
+ }
+ 
+@@ -659,15 +647,8 @@ void nsPluginInstance::Show()
+ 
+ void nsPluginInstance::Disconnect()
+ {
+-    for (std::map<pid_t, nsPluginInstance *>::iterator it = s_children.begin();
+-         it != s_children.end(); ++it)
+-    {
+-        if (it->second == this)
+-        {
+-            kill(it->first, SIGTERM);
+-            break;
+-        }
+-    }
++    kill(m_pid_controller, SIGTERM);
++    kill(m_pid_usbrdrctrl, SIGTERM);
+ }
+ 
+ void nsPluginInstance::ConnectedStatus(PRInt32 *retval)
+@@ -687,9 +668,64 @@ void nsPluginInstance::SetLanguageStrings(const char *aSection, const char *aLan
+ 
+ void nsPluginInstance::SetUsbFilter(const char *aUsbFilter)
+ {
+-    // this method exists due to RHEVM 2.2
+-    // and should be removed some time in future,
+-    // when fixed in RHEVM
++    if (aUsbFilter != NULL)
++        m_usb_filter = aUsbFilter;
++}
++
++void nsPluginInstance::ExecuteUsbRdrCtrl()
++{
++    if (m_pid_usbrdrctrl == 0 || m_usb_port == 0)
++        return;
++
++    if ((m_pid_usbrdrctrl = fork()) == 0)
++    {    
++        std::stringstream ss;
++        std::string log_name;
++        ss << m_home_dir << "/usbrdrctrl-" << getpid() << ".log";
++        ss >> log_name;
++        
++        int logfd = open(log_name.c_str(), O_RDWR | O_CREAT,
++            S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
++
++        if (logfd > 0)
++            dup2(logfd, 1);
++        
++        std::string conn_name;
++        ss.clear();
++        ss << "/tmp/SpiceForeignMenu-" << m_pid_controller << ".uds";
++        ss >> conn_name;
++        LOG_DEBUG("Connection name: " << conn_name);
++
++        std::string port;
++        ss.clear();
++        ss << m_usb_port;
++        ss >> port;
++
++        sleep(2);
++        
++        execl("/usr/bin/usbrdrctrl",
++            "/usr/bin/usbrdrctrl",
++            m_guest_host_name.c_str(),
++            port.c_str(),
++            "-c",
++            conn_name.c_str(),
++            !m_language["USB"].empty() ? "-l" : "",
++            !m_language["USB"].empty() ? m_language["USB"].c_str() : "",
++            !m_usb_filter.empty() ? "-f" : "",
++            !m_usb_filter.empty() ? m_usb_filter.c_str() : "",
++            (m_usb_auto_share == PR_TRUE) ? "-a" : "",
++            NULL);
++
++        LOG_ERROR("Failed to execute usbrdrctrl: " << errno << ": " << strerror(errno));
++        exit(0);
++            
++    }
++    else if (m_pid_usbrdrctrl > 0)
++    {
++        pthread_t thread_usbrdrctrl_id;
++        pthread_create(&thread_usbrdrctrl_id, NULL, UsbRdrCtrlWaitHelper,
++            reinterpret_cast<void *>(this));
++    }
+ }
+ 
+ void nsPluginInstance::CallOnDisconnected(int code)
+@@ -744,17 +780,38 @@ void nsPluginInstance::CallOnDisconnected(int code)
+     NPN_ReleaseVariantValue(&var_on_disconnected);
+ }
+ 
+-void nsPluginInstance::SigchldRoutine(int sig, siginfo_t *info, void *uap)
++void *nsPluginInstance::ControllerWaitHelper(void *opaque)
+ {
+-    LOG_DEBUG("child finished, pid: " << info->si_pid);
++    nsPluginInstance *fake_this = reinterpret_cast<nsPluginInstance *>(opaque);
++    if (!fake_this)
++        return NULL;
+ 
+     int exit_code;
+-    waitpid(info->si_pid, &exit_code, 0);
+-
+-    nsPluginInstance *fake_this = s_children[info->si_pid];
++    waitpid(fake_this->m_pid_controller, &exit_code, 0);
++    LOG_DEBUG("Controller finished, pid: " << fake_this->m_pid_controller 
++        << ", exit code: " << exit_code);
+     fake_this->CallOnDisconnected(exit_code);
+     fake_this->m_external_controller.Disconnect();
+-    s_children.erase(info->si_pid);
++    fake_this->m_pid_controller = -1;
++    return NULL;
++}
++
++void *nsPluginInstance::UsbRdrCtrlWaitHelper(void *opaque)
++{
++    nsPluginInstance *fake_this= reinterpret_cast<nsPluginInstance *>(opaque);
++    if (!fake_this)
++        return NULL;
++
++    int exit_code;
++    waitpid(fake_this->m_pid_usbrdrctrl, &exit_code, 0);
++    LOG_DEBUG("usbrdrctrl finished, pid: " << fake_this->m_pid_usbrdrctrl
++        << ", exit code: " << exit_code);
++    fake_this->m_pid_usbrdrctrl = -1;
++    
++    if (exit_code != 0)
++        fake_this->ExecuteUsbRdrCtrl();
++    
++    return NULL;
+ }
+ 
+ // ==============================
+diff --git a/SpiceXPI/src/plugin/plugin.h b/SpiceXPI/src/plugin/plugin.h
+index e656ac7..5f95472 100644
+--- a/SpiceXPI/src/plugin/plugin.h
++++ b/SpiceXPI/src/plugin/plugin.h
+@@ -50,11 +50,6 @@
+ #include <npapi.h>
+ #include <npruntime.h>
+ 
+-extern "C" {
+-#include <pthread.h>
+-#include <signal.h>
+-}
+-
+ #include "pluginbase.h"
+ #include "controller.h"
+ #include "common.h"
+@@ -159,7 +154,9 @@ public:
+     NPObject *GetScriptablePeer();
+     
+ private:
+-    static void SigchldRoutine(int sig, siginfo_t *info, void *uap);
++    static void *ControllerWaitHelper(void *opaque);
++    static void *UsbRdrCtrlWaitHelper(void *opaque);
++    void ExecuteUsbRdrCtrl();
+     void WriteToPipe(const void *data, uint32_t size);
+     void SendInit();
+     void SendMsg(uint32_t id);
+@@ -169,7 +166,8 @@ private:
+     void CallOnDisconnected(int code);
+   
+ private:
+-    static std::map<pid_t, nsPluginInstance *> s_children;
++    pid_t m_pid_controller;
++    pid_t m_pid_usbrdrctrl;
+     PRInt32 m_connected_status;
+     SpiceController m_external_controller;
+ 
+@@ -195,6 +193,10 @@ private:
+     std::string m_hot_keys;
+     PRBool m_no_taskmgr_execution;
+     PRBool m_send_ctrlaltdel;
++    unsigned short m_usb_port;
++    std::string m_usb_filter;
++    PRBool m_usb_auto_share;
++    pid_t m_usb_ctrl_pid;
+     std::map<std::string, std::string> m_language;
+     
+     NPObject *m_scriptable_peer;

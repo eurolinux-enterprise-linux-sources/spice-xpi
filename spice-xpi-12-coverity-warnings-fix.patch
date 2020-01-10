@@ -1,0 +1,89 @@
+diff --git a/SpiceXPI/src/plugin/controller.cpp b/SpiceXPI/src/plugin/controller.cpp
+index 256dbf9..b30498e 100644
+--- a/SpiceXPI/src/plugin/controller.cpp
++++ b/SpiceXPI/src/plugin/controller.cpp
+@@ -103,6 +103,8 @@ int SpiceController::Connect()
+ 
+     struct sockaddr_un remote;
+     remote.sun_family = AF_UNIX;
++    if (m_name.length() + 1 > sizeof(remote.sun_path))
++        return -1;
+     strcpy(remote.sun_path, m_name.c_str());
+ 
+     int rc = connect(m_client_socket, (struct sockaddr *) &remote, strlen(remote.sun_path) + sizeof(remote.sun_family));
+diff --git a/SpiceXPI/src/plugin/plugin.cpp b/SpiceXPI/src/plugin/plugin.cpp
+index a45c3f2..607f898 100644
+--- a/SpiceXPI/src/plugin/plugin.cpp
++++ b/SpiceXPI/src/plugin/plugin.cpp
+@@ -184,9 +184,18 @@ nsPluginInstance::nsPluginInstance(NPP aInstance):
+     nsPluginInstanceBase(),
+     m_pid_controller(-1),
+     m_pid_usbrdrctrl(-1),
++    m_connected_status(-2),
+     m_instance(aInstance),
+-    m_initialized(PR_FALSE),
+-    m_scriptable_peer(NULL)
++    m_initialized(PR_TRUE),
++    m_window(NULL),
++    m_fullscreen(PR_FALSE),
++    m_smartcard(PR_FALSE),
++    m_admin_console(PR_FALSE),
++    m_no_taskmgr_execution(PR_FALSE),
++    m_send_ctrlaltdel(PR_TRUE),
++    m_usb_port(0),
++    m_usb_auto_share(PR_TRUE),
++    m_scriptable_peer(NULL)
+ {
+     // create .spicec directory in $HOME
+     m_home_dir = getenv("HOME");
+@@ -208,8 +217,6 @@ nsPluginInstance::nsPluginInstance(NPP aInstance):
+     {
+         log4cpp::BasicConfigurator::configure();
+     }
+-
+-    m_connected_status = -2;
+ }
+ 
+ nsPluginInstance::~nsPluginInstance()
+@@ -241,6 +248,11 @@ NPBool nsPluginInstance::init(NPWindow *aWindow)
+     m_dynamic_menu.clear();
+     m_number_of_monitors.clear();
+     m_guest_host_name.clear();
++    m_hot_keys.clear();
++    m_usb_filter.clear();
++    m_language.clear();
++    m_trust_store_file.clear();
++    m_foreign_file.clear();
+ 
+     m_fullscreen = PR_FALSE;
+     m_smartcard = PR_FALSE;
+@@ -662,7 +674,9 @@ void nsPluginInstance::Connect()
+         FILE *fp;
+         int fd = -1;
+         char trust_store_template[] = "/tmp/truststore.pem-XXXXXX";
++        mode_t prev_umask = umask(0177);
+         fd = mkstemp(trust_store_template);
++        umask(prev_umask);
+         m_trust_store_file = trust_store_template;
+ 
+         if (fd != -1)
+diff --git a/SpiceXPI/src/plugin/plugin.h b/SpiceXPI/src/plugin/plugin.h
+index e2284c4..f8ad6c2 100644
+--- a/SpiceXPI/src/plugin/plugin.h
++++ b/SpiceXPI/src/plugin/plugin.h
+@@ -180,7 +180,6 @@ private:
+     NPBool m_initialized;
+     
+     NPWindow *m_window;
+-    PRBool m_fIPC;
+     std::string m_host_ip;
+     std::string m_port;
+     std::string m_password;
+@@ -202,7 +201,6 @@ private:
+     unsigned short m_usb_port;
+     std::string m_usb_filter;
+     PRBool m_usb_auto_share;
+-    pid_t m_usb_ctrl_pid;
+     std::map<std::string, std::string> m_language;
+     
+     NPObject *m_scriptable_peer;
