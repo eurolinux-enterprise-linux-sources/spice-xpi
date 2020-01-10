@@ -1,0 +1,22 @@
+diff --git a/SpiceXPI/src/plugin/plugin.cpp b/SpiceXPI/src/plugin/plugin.cpp
+index bd248fc..cc2e742 100644
+--- a/SpiceXPI/src/plugin/plugin.cpp
++++ b/SpiceXPI/src/plugin/plugin.cpp
+@@ -683,6 +683,8 @@ void nsPluginInstance::Connect()
+     m_pid_controller = fork();
+     if (m_pid_controller == 0)
+     {
++        setpgrp();
++
+         char *spice_xpi_client_args[] = {
+             const_cast<char*>("/usr/libexec/spice-xpi-client"),
+             NULL
+@@ -809,7 +811,7 @@ void nsPluginInstance::Disconnect()
+ {
+     LOG_INFO("Disconnecting");
+     if (m_pid_controller > 0)
+-        kill(m_pid_controller, SIGTERM);
++        kill(-m_pid_controller, SIGTERM);
+     if (m_pid_usbrdrctrl > 0)
+         kill(m_pid_usbrdrctrl, SIGTERM);
+ }

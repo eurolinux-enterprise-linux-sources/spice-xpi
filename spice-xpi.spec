@@ -2,7 +2,7 @@
 %define tarversion 2.7
 Name:           spice-xpi
 Version:        2.7
-Release:        20%{?dist}
+Release:        22%{?dist}
 Summary: SPICE extension for Mozilla
 Group: Applications/Internet
 License:        GPLv2+
@@ -24,6 +24,8 @@ Patch13:        spice-xpi-13-add-support-for-DisableEffects-and-ColorDepth.patch
 Patch14:        spice-xpi-14-Add-support-for-new-USB-redirection.patch
 Patch15:        spice-xpi-15-remove-leading-s-from-ssl-channels.patch
 Patch16:        spice-xpi-16-SetSSLChannels-add-ssmartcard-susbredir-stunnel.patch
+Patch17:        spice-xpi-17-disconnect-signal-handling.patch
+Patch18:        spice-xpi-18-validate-ports.patch
 
 BuildRoot:      %{_tmppath}/%{tarname}-%{version}-%{release}-root-%(%{__id_u} -n)
 
@@ -64,6 +66,8 @@ SPICE extension for mozilla allows the client to be used from a web browser.
 %patch14 -p1
 %patch15 -p1
 %patch16 -p1
+%patch17 -p1
+%patch18 -p1
 
 %build
 autoreconf
@@ -89,6 +93,14 @@ rm -rf $RPM_BUILD_ROOT
 %doc COPYING README
 
 %changelog
+* Tue Jul 31 2012 Peter Hatina <phatina@redhat.com> 2.7-22
+- Add tcp ports validation
+  Resolves: rhbz#805602
+
+* Tue Jul 31 2012 Peter Hatina <phatina@redhat.com> - 2.7-21
+- Fix signal handling when disconnecting by page
+  Resolves: rhbz#810583
+
 * Mon May 21 2012 Alon Levy <alevy@redhat.com> - 2.7-20
 - Remove leading 's' from smartcard, usbredir and tunnel channels.
   Resolves: rhbz#823579
