@@ -2,7 +2,7 @@
 %define tarversion 2.7
 Name:           spice-xpi
 Version:        2.7
-Release:        25%{?dist}
+Release:        27%{?dist}
 Summary: SPICE extension for Mozilla
 Group: Applications/Internet
 License:        GPLv2+
@@ -30,6 +30,8 @@ Patch19:        spice-xpi-19-remove-foreign-file.patch
 Patch20:        spice-xpi-20-xpi-add-Proxy-member.patch
 Patch21:        spice-xpi-21-avoid-crash-after-45s.patch
 Patch22:        spice-xpi-22-exit-if-already-connected.patch
+Patch23:        spice-xpi-23-Add-missing-logs-for-some-controller-properties.patch
+Patch1000:      spice-xpi-1000-Fix-unsetting-of-proxy-property.patch
 
 BuildRoot:      %{_tmppath}/%{tarname}-%{version}-%{release}-root-%(%{__id_u} -n)
 
@@ -76,6 +78,8 @@ SPICE extension for mozilla allows the client to be used from a web browser.
 %patch20 -p1
 %patch21 -p1
 %patch22 -p1
+%patch23 -p1
+%patch1000 -p1
 
 %build
 autoreconf
@@ -101,6 +105,14 @@ rm -rf $RPM_BUILD_ROOT
 %doc COPYING README
 
 %changelog
+* Tue Mar 17 2015 Christophe Fergeau <cfergeau@redhat.com> 2.7-27
+- Fix unsetting of proxy
+  Resolves: rhbz#1049475
+
+* Mon Mar 02 2015 Christophe Fergeau <cfergeau@redhat.com> 2.7-26
+- Add missing logs when getting/setting some controller properties
+  Resolves: rhbz#1049486
+
 * Tue Jun 03 2014 Marc-André Lureau <marcandre.lureau@redhat.com> - 2.7-25
 - Don't crash after unsuccessful connection attempt.
   Resolves: rhbz#1073461

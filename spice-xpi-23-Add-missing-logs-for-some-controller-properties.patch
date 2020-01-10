@@ -1,0 +1,74 @@
+From 2c97455d2507edca21af82cf56a3136f6b2a8b51 Mon Sep 17 00:00:00 2001
+From: Christophe Fergeau <cfergeau@redhat.com>
+Date: Wed, 8 Jan 2014 11:30:26 +0100
+Subject: [PATCH] Add missing logs for some controller properties
+
+The proxy, smartcard, disable effects and color depth properties were not
+logged when being read/set contrary to all other controller properties.
+---
+ SpiceXPI/src/plugin/plugin.cpp | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/SpiceXPI/src/plugin/plugin.cpp b/SpiceXPI/src/plugin/plugin.cpp
+index 2e66ec3..a259950 100644
+--- a/SpiceXPI/src/plugin/plugin.cpp
++++ b/SpiceXPI/src/plugin/plugin.cpp
+@@ -438,12 +438,14 @@ void nsPluginInstance::SetFullScreen(PRBool aFullScreen)
+ /* attribute boolean Smartcard; */
+ PRBool nsPluginInstance::GetSmartcard() const
+ {
++    LOG_DEBUG(m_smartcard);
+     return m_smartcard;
+ }
+ 
+ void nsPluginInstance::SetSmartcard(PRBool aSmartcard)
+ {
+     m_smartcard = aSmartcard;
++    LOG_DEBUG(m_smartcard);
+ }
+ 
+ /* attribute string Title; */
+@@ -585,34 +587,40 @@ void nsPluginInstance::SetUsbAutoShare(PRBool aUsbAutoShare)
+ /* attribute string ColorDepth; */
+ char *nsPluginInstance::GetColorDepth() const
+ {
++    LOG_DEBUG(m_color_depth);
+     return stringCopy(m_color_depth);
+ }
+ 
+ void nsPluginInstance::SetColorDepth(const char *aColorDepth)
+ {
+     m_color_depth = aColorDepth;
++    LOG_DEBUG(m_color_depth);
+ }
+ 
+ /* attribute string DisableEffects; */
+ char *nsPluginInstance::GetDisableEffects() const
+ {
++    LOG_DEBUG(m_disable_effects);
+     return stringCopy(m_disable_effects);
+ }
+ 
+ void nsPluginInstance::SetDisableEffects(const char *aDisableEffects)
+ {
+     m_disable_effects = aDisableEffects;
++    LOG_DEBUG(m_disable_effects);
+ }
+ 
+ /* attribute string Proxy; */
+ char *nsPluginInstance::GetProxy() const
+ {
++    LOG_DEBUG(m_proxy);
+     return stringCopy(m_proxy);
+ }
+ 
+ void nsPluginInstance::SetProxy(const char *aProxy)
+ {
+     m_proxy = aProxy;
++    LOG_DEBUG(m_proxy);
+ }
+ 
+ void nsPluginInstance::WriteToPipe(const void *data, uint32_t size)
+-- 
+1.8.4.2
+

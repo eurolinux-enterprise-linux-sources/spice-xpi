@@ -1,0 +1,47 @@
+From 458835fce64abc721293e2b1843cb91902ad2ac8 Mon Sep 17 00:00:00 2001
+From: Christophe Fergeau <cfergeau@redhat.com>
+Date: Tue, 17 Mar 2015 14:28:04 +0100
+Subject: [PATCH] Fix unsetting of "proxy" property
+
+When a proxy value is set, the spice-xpi plugin will set a SPICE_PROXY
+environment variable before starting remote-viewer.
+However, this environment variable is never unset in cases like
+- set proxy
+- start remote-viewer
+- unset proxy
+- start remote-viewer
+
+In the second run, SPICE_PROXY will still be set, resulting in
+remote-viewer to keep trying to use the proxy even though it has been
+unset.
+This commit fixes that by calling unsetenv if the proxy value is empty.
+
+This bug does not happen upstream because there we are creating a copy
+of the current environment, we set SPICE_PROXY in that copy, and then
+pass that copy to g_spawn_async(). The environment of the process
+spice-xpi runs in is thus never modified.
+
+Resolves: rhbz#1049475
+---
+ SpiceXPI/src/plugin/plugin.cpp | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/SpiceXPI/src/plugin/plugin.cpp b/SpiceXPI/src/plugin/plugin.cpp
+index 2e66ec3..720d26a 100644
+--- a/SpiceXPI/src/plugin/plugin.cpp
++++ b/SpiceXPI/src/plugin/plugin.cpp
+@@ -706,7 +706,13 @@ void nsPluginInstance::Connect()
+         return;
+     }
+     LOG_INFO("SPICE_XPI_SOCKET: " << socket_file);
+-    if (!m_proxy.empty()) {
++    if (m_proxy.empty())
++    {
++        unsetenv("SPICE_PROXY");
++        LOG_INFO("SPICE_PROXY unset");
++    }
++    else
++    {
+         setenv("SPICE_PROXY", m_proxy.c_str(), 1);
+         LOG_INFO("SPICE_PROXY: " << m_proxy);
+     }
