@@ -2,7 +2,7 @@
 %define tarversion 2.7
 Name:           spice-xpi
 Version:        2.7
-Release:        22%{?dist}
+Release:        24%{?dist}
 Summary: SPICE extension for Mozilla
 Group: Applications/Internet
 License:        GPLv2+
@@ -26,6 +26,8 @@ Patch15:        spice-xpi-15-remove-leading-s-from-ssl-channels.patch
 Patch16:        spice-xpi-16-SetSSLChannels-add-ssmartcard-susbredir-stunnel.patch
 Patch17:        spice-xpi-17-disconnect-signal-handling.patch
 Patch18:        spice-xpi-18-validate-ports.patch
+Patch19:        spice-xpi-19-remove-foreign-file.patch
+Patch20:        spice-xpi-20-xpi-add-Proxy-member.patch
 
 BuildRoot:      %{_tmppath}/%{tarname}-%{version}-%{release}-root-%(%{__id_u} -n)
 
@@ -68,6 +70,8 @@ SPICE extension for mozilla allows the client to be used from a web browser.
 %patch16 -p1
 %patch17 -p1
 %patch18 -p1
+%patch19 -p1
+%patch20 -p1
 
 %build
 autoreconf
@@ -93,6 +97,14 @@ rm -rf $RPM_BUILD_ROOT
 %doc COPYING README
 
 %changelog
+* Thu Aug 08 2013 Christophe Fergeau <cfergeau@redhat.com> 2.7-24
+- Add support for setting proxy through controller
+  Resolves: rhbz#994613
+
+* Mon Jun 17 2013 Peter Hatina <phatina@redhat.com> 2.7-23
+- Fix remove foreign file
+  Resolves: rhbz#882339
+
 * Tue Jul 31 2012 Peter Hatina <phatina@redhat.com> 2.7-22
 - Add tcp ports validation
   Resolves: rhbz#805602

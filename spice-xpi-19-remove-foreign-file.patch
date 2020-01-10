@@ -1,0 +1,13 @@
+diff --git a/SpiceXPI/src/plugin/plugin.cpp b/SpiceXPI/src/plugin/plugin.cpp
+index 4a88e45..d5ca720 100644
+--- a/SpiceXPI/src/plugin/plugin.cpp
++++ b/SpiceXPI/src/plugin/plugin.cpp
+@@ -996,7 +996,9 @@ void *nsPluginInstance::ControllerWaitHelper(void *opaque)
+     fake_this->m_external_controller.Disconnect();
+     fake_this->m_pid_controller = -1;
+     unlink(fake_this->m_trust_store_file.c_str());
++    unlink(fake_this->m_foreign_file.c_str());
+     fake_this->m_trust_store_file.clear();
++    fake_this->m_foreign_file.clear();
+     return NULL;
+ }

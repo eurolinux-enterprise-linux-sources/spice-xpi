@@ -1,0 +1,153 @@
+From 5fd94bf1403156caaeb64dd4ead0337b5232e22d Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Marc-Andr=C3=A9=20Lureau?= <marcandre.lureau@redhat.com>
+Date: Mon, 28 Jan 2013 19:02:17 +0100
+Subject: [PATCH] xpi: add Proxy member
+
+Set SPICE_PROXY environment variable accordingly.
+---
+ SpiceXPI/src/plugin/nsISpicec.idl        |  1 +
+ SpiceXPI/src/plugin/nsScriptablePeer.cpp |  9 ++++++++-
+ SpiceXPI/src/plugin/nsScriptablePeer.h   |  1 +
+ SpiceXPI/src/plugin/plugin.cpp           | 16 ++++++++++++++++
+ SpiceXPI/src/plugin/plugin.h             |  5 +++++
+ 5 files changed, 31 insertions(+), 1 deletion(-)
+
+diff --git a/SpiceXPI/src/plugin/nsISpicec.idl b/SpiceXPI/src/plugin/nsISpicec.idl
+index d3d0699..ea7ae63 100644
+--- a/SpiceXPI/src/plugin/nsISpicec.idl
++++ b/SpiceXPI/src/plugin/nsISpicec.idl
+@@ -63,6 +63,7 @@ interface nsISpicec : nsISupports {
+     attribute boolean Smartcard;
+     attribute string ColorDepth;
+     attribute string DisableEffects;
++    attribute string Proxy;
+ 
+     void connect();
+     void show();
+diff --git a/SpiceXPI/src/plugin/nsScriptablePeer.cpp b/SpiceXPI/src/plugin/nsScriptablePeer.cpp
+index caab9b7..fe8e48f 100644
+--- a/SpiceXPI/src/plugin/nsScriptablePeer.cpp
++++ b/SpiceXPI/src/plugin/nsScriptablePeer.cpp
+@@ -88,6 +88,7 @@ NPIdentifier ScriptablePluginObject::m_id_set_language_strings;
+ NPIdentifier ScriptablePluginObject::m_id_set_usb_filter;
+ NPIdentifier ScriptablePluginObject::m_id_connect_status;
+ NPIdentifier ScriptablePluginObject::m_id_plugin_instance;
++NPIdentifier ScriptablePluginObject::m_id_proxy;
+ 
+ NPObject *AllocateScriptablePluginObject(NPP npp, NPClass *aClass)
+ {
+@@ -140,6 +141,7 @@ void ScriptablePluginObject::Init()
+     m_id_set_usb_filter = NPN_GetStringIdentifier("SetUsbFilter");
+     m_id_connect_status = NPN_GetStringIdentifier("ConnectedStatus");
+     m_id_plugin_instance = NPN_GetStringIdentifier("PluginInstance");
++    m_id_proxy = NPN_GetStringIdentifier("Proxy");
+     m_id_set = true;
+ }
+ 
+@@ -176,7 +178,8 @@ bool ScriptablePluginObject::HasProperty(NPIdentifier name)
+            name == m_id_usb_listen_port ||
+            name == m_id_usb_auto_share ||
+            name == m_id_color_depth ||
+-           name == m_id_disable_effects);
++           name == m_id_disable_effects ||
++           name == m_id_proxy);
+ }
+ 
+ bool ScriptablePluginObject::GetProperty(NPIdentifier name, NPVariant *result)
+@@ -230,6 +233,8 @@ bool ScriptablePluginObject::GetProperty(NPIdentifier name, NPVariant *result)
+         STRINGZ_TO_NPVARIANT(m_plugin->GetColorDepth(), *result);
+     else if (name == m_id_disable_effects)
+         STRINGZ_TO_NPVARIANT(m_plugin->GetDisableEffects(), *result);
++    else if (name == m_id_proxy)
++        STRINGZ_TO_NPVARIANT(m_plugin->GetProxy(), *result);
+     else
+         return false;
+ 
+@@ -310,6 +315,8 @@ bool ScriptablePluginObject::SetProperty(NPIdentifier name, const NPVariant *val
+         m_plugin->SetColorDepth(str.c_str());
+     else if (name == m_id_disable_effects)
+         m_plugin->SetDisableEffects(str.c_str());
++    else if (name == m_id_proxy)
++        m_plugin->SetProxy(str.c_str());
+     else
+         return false;
+ 
+diff --git a/SpiceXPI/src/plugin/nsScriptablePeer.h b/SpiceXPI/src/plugin/nsScriptablePeer.h
+index 44bd53c..7488726 100644
+--- a/SpiceXPI/src/plugin/nsScriptablePeer.h
++++ b/SpiceXPI/src/plugin/nsScriptablePeer.h
+@@ -105,6 +105,7 @@ private:
+     static NPIdentifier m_id_set_usb_filter;
+     static NPIdentifier m_id_connect_status;
+     static NPIdentifier m_id_plugin_instance;
++    static NPIdentifier m_id_proxy;
+ };
+ 
+ #define DECLARE_NPOBJECT_CLASS_WITH_BASE(_class, ctor)                        \
+diff --git a/SpiceXPI/src/plugin/plugin.cpp b/SpiceXPI/src/plugin/plugin.cpp
+index d5ca720..d82230c 100644
+--- a/SpiceXPI/src/plugin/plugin.cpp
++++ b/SpiceXPI/src/plugin/plugin.cpp
+@@ -267,6 +267,7 @@ NPBool nsPluginInstance::init(NPWindow *aWindow)
+     m_foreign_file.clear();
+     m_color_depth.clear();
+     m_disable_effects.clear();
++    m_proxy.clear();
+ 
+     m_fullscreen = PR_FALSE;
+     m_smartcard = PR_FALSE;
+@@ -603,6 +604,17 @@ void nsPluginInstance::SetDisableEffects(const char *aDisableEffects)
+     m_disable_effects = aDisableEffects;
+ }
+ 
++/* attribute string Proxy; */
++char *nsPluginInstance::GetProxy() const
++{
++    return stringCopy(m_proxy);
++}
++
++void nsPluginInstance::SetProxy(const char *aProxy)
++{
++    m_proxy = aProxy;
++}
++
+ void nsPluginInstance::WriteToPipe(const void *data, uint32_t size)
+ {
+     m_external_controller.Write(data, size);
+@@ -694,6 +706,10 @@ void nsPluginInstance::Connect()
+         return;
+     }
+     LOG_INFO("SPICE_XPI_SOCKET: " << socket_file);
++    if (!m_proxy.empty()) {
++        setenv("SPICE_PROXY", m_proxy.c_str(), 1);
++        LOG_INFO("SPICE_PROXY: " << m_proxy);
++    }
+ 
+     std::string foreign_file(m_tmp_dir);
+     foreign_file += "/spice-foreign";
+diff --git a/SpiceXPI/src/plugin/plugin.h b/SpiceXPI/src/plugin/plugin.h
+index 2c19930..bf1bc85 100644
+--- a/SpiceXPI/src/plugin/plugin.h
++++ b/SpiceXPI/src/plugin/plugin.h
+@@ -163,6 +163,10 @@ public:
+     char *GetDisableEffects() const;
+     void SetDisableEffects(const char *aDisableEffects);
+ 
++     /* attribute ing Proxy; */
++    char *GetProxy() const;
++    void SetProxy(const char *aProxy);
++
+     NPObject *GetScriptablePeer();
+     
+ private:
+@@ -213,6 +217,7 @@ private:
+     std::map<std::string, std::string> m_language;
+     std::string m_color_depth;
+     std::string m_disable_effects;
++    std::string m_proxy;
+     
+     NPObject *m_scriptable_peer;
+     std::string m_home_dir;
+-- 
+1.8.3.1
+
