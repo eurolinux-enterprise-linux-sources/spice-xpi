@@ -1,0 +1,32 @@
+From e2905d7550c696959f69f62e96b64a2a009077ab Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Marc-Andr=C3=A9=20Lureau?= <marcandre.lureau@redhat.com>
+Date: Tue, 3 Jun 2014 18:41:30 +0300
+Subject: [PATCH 1/2] avoid browser kill after 45s of idleness
+
+---
+ SpiceXPI/src/plugin/controller.cpp |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
+
+diff --git a/SpiceXPI/src/plugin/controller.cpp b/SpiceXPI/src/plugin/controller.cpp
+index b30498e..765b19e 100644
+--- a/SpiceXPI/src/plugin/controller.cpp
++++ b/SpiceXPI/src/plugin/controller.cpp
+@@ -124,14 +124,13 @@ int SpiceController::Connect()
+ int SpiceController::Connect(const int nRetries)
+ {
+     int rc = -1;
+-    int sleep_time = 0;
++    int sleep_time = 1;
+ 
+     // try to connect for specified count
+     for (int i = 0; rc != 0 && i < nRetries; ++i)
+     {
+         rc = Connect();
+         sleep(sleep_time);
+-        ++sleep_time;
+     }
+ 
+     return rc;
+-- 
+1.7.1
+

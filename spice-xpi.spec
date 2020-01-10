@@ -2,7 +2,7 @@
 %define tarversion 2.7
 Name:           spice-xpi
 Version:        2.7
-Release:        24%{?dist}
+Release:        25%{?dist}
 Summary: SPICE extension for Mozilla
 Group: Applications/Internet
 License:        GPLv2+
@@ -28,6 +28,8 @@ Patch17:        spice-xpi-17-disconnect-signal-handling.patch
 Patch18:        spice-xpi-18-validate-ports.patch
 Patch19:        spice-xpi-19-remove-foreign-file.patch
 Patch20:        spice-xpi-20-xpi-add-Proxy-member.patch
+Patch21:        spice-xpi-21-avoid-crash-after-45s.patch
+Patch22:        spice-xpi-22-exit-if-already-connected.patch
 
 BuildRoot:      %{_tmppath}/%{tarname}-%{version}-%{release}-root-%(%{__id_u} -n)
 
@@ -72,6 +74,8 @@ SPICE extension for mozilla allows the client to be used from a web browser.
 %patch18 -p1
 %patch19 -p1
 %patch20 -p1
+%patch21 -p1
+%patch22 -p1
 
 %build
 autoreconf
@@ -97,6 +101,10 @@ rm -rf $RPM_BUILD_ROOT
 %doc COPYING README
 
 %changelog
+* Tue Jun 03 2014 Marc-André Lureau <marcandre.lureau@redhat.com> - 2.7-25
+- Don't crash after unsuccessful connection attempt.
+  Resolves: rhbz#1073461
+
 * Thu Aug 08 2013 Christophe Fergeau <cfergeau@redhat.com> 2.7-24
 - Add support for setting proxy through controller
   Resolves: rhbz#994613
