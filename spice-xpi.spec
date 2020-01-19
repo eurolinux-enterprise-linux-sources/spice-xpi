@@ -1,6 +1,6 @@
 Name:           spice-xpi
 Version:        2.8
-Release:        4%{?dist}
+Release:        5%{?dist}
 Summary:        SPICE extension for Mozilla
 Group:          Applications/Internet
 License:        MPLv1.1 or GPLv2+ or LGPLv2+
@@ -38,6 +38,9 @@ make install DESTDIR=$RPM_BUILD_ROOT
 %exclude %{_libdir}/mozilla/plugins/*.la
 
 %changelog
+* Fri Dec 27 2013 Daniel Mach <dmach@redhat.com> - 2.8-5
+- Mass rebuild 2013-12-27
+
 * Fri Sep 13 2013 Christophe Fergeau <cfergeau@redhat.com> 2.8-4
 - Add support for setting SPICE proxy through spice-xpi
 
